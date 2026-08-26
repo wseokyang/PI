@@ -1,0 +1,632 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0"
+                  id="Definitions_TOBE_Defect_AI_ClosedLoop"
+                  targetNamespace="https://example.com/bpmn/tobe-defect-ai-closed-loop"
+                  exporter="OpenAI Codex"
+                  exporterVersion="1.0">
+  <bpmn:process id="Process_TOBE_Defect_AI_ClosedLoop" name="TO-BE: 불량 분석 ~ Closed Loop 구축" isExecutable="false">
+    <bpmn:documentation>순서도.png의 현재 TO-BE 흐름을 BPMN 2.0으로 구조화했다. 원본 파란색 15개 개선 항목에는 ECRSA와 AS-IS·TO-BE 추정 Lead Time을 기록했다. 시간은 실측 전 가설이며 흰색 비개선 단계는 미산정이다. BPMN 토큰 의미를 명확히 하기 위해 작업과 판단, XOR merge/diverge, Parallel fork/join을 분리했다.</bpmn:documentation>
+    <bpmn:laneSet id="LaneSet_TOBE_Main">
+      <bpmn:lane id="Lane_Defect_Definition" name="불량 분석 및 과제 정의">
+        <bpmn:flowNodeRef>StartEvent_Process</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Defect_Receipt</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Product_Info_Check</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Product_Info_Result</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Defect_Factor_Analysis" name="불량 협의 인자 분석">
+        <bpmn:flowNodeRef>Task_Physical_Analysis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Process_Analysis_Merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Process_Analysis</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Production_Data" name="양산 데이터 확보">
+        <bpmn:flowNodeRef>Task_Data_Acquisition</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Data_Pipeline</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DB_Design</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_AI_Environment_Preprocessing" name="AI 구축 환경 준비 데이터 전처리">
+        <bpmn:flowNodeRef>Task_AI_Feasibility</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Environment_Merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Development_Environment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Preprocessing_Fork</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Outlier_Removal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Label_Generation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Preprocessing_Join</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Data_Quality_Check</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Data_Quality_Result</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Training_Dataset</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_AI_Model_Development" name="AI 모델 설계 및 개발">
+        <bpmn:flowNodeRef>Task_Model_Selection</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Detect_Logic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Model_Architecture</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Model_Training</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Test_Environment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Function_Merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Function_Validation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Function_Result</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Code_Improvement</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Parameter_Optimization</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Monitoring_Optimization" name="모니터링 및 이상감지 최적화">
+        <bpmn:flowNodeRef>Task_Monitoring</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Anomaly_Detection</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Defect_Conformity</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Closed_Loop</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Process</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_Process" name="시작">
+      <bpmn:outgoing>Flow_Start_To_Receipt</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Defect_Receipt" name="불량 현상 접수">
+      <bpmn:incoming>Flow_Start_To_Receipt</bpmn:incoming>
+      <bpmn:outgoing>Flow_Receipt_To_Product_Info</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Product_Info_Check" name="I01 제품 정보 확인&#10;[C/S/A · 6h→30분]">
+      <bpmn:documentation>PI-ID: I01. ECRSA: C(결합), S(단순화), A(자동화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 6h → TO-BE 30분, 약 92% 단축. 개선 내용: 접수 항목을 표준화하고 PLM·MES 정보를 통합 조회해 재요청과 수기 대조를 축소. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Receipt_To_Product_Info</bpmn:incoming>
+      <bpmn:outgoing>Flow_Product_Info_To_Result</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Product_Info_Result" name="제품 정보 충분?" gatewayDirection="Diverging" default="Flow_Product_Info_Insufficient">
+      <bpmn:incoming>Flow_Product_Info_To_Result</bpmn:incoming>
+      <bpmn:outgoing>Flow_Product_Info_Insufficient</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Product_Info_Sufficient</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Physical_Analysis" name="실물 분석 (eFA, pFA)">
+      <bpmn:incoming>Flow_Product_Info_Insufficient</bpmn:incoming>
+      <bpmn:outgoing>Flow_Physical_To_Process_Merge</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Process_Analysis_Merge" name="공정 분석 진입 합류" gatewayDirection="Converging">
+      <bpmn:incoming>Flow_Product_Info_Sufficient</bpmn:incoming>
+      <bpmn:incoming>Flow_Physical_To_Process_Merge</bpmn:incoming>
+      <bpmn:outgoing>Flow_Process_Merge_To_Analysis</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Process_Analysis" name="I02 공정 분석 (Commonality)&#10;[C/S/A · 24h→8h]">
+      <bpmn:documentation>PI-ID: I02. ECRSA: C(결합), S(단순화), A(자동화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 24h → TO-BE 8h, 약 67% 단축. 개선 내용: 공통 Key와 분석 Template을 표준화하고 Commonality 집계·비교를 자동화. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Process_Merge_To_Analysis</bpmn:incoming>
+      <bpmn:outgoing>Flow_Process_To_Data</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Data_Acquisition" name="Data 확보 및 검증">
+      <bpmn:incoming>Flow_Process_To_Data</bpmn:incoming>
+      <bpmn:outgoing>Flow_Data_To_Pipeline</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Data_Pipeline" name="I03 Data Pipeline 설계&#10;[E/C/R/A · 32h→12h]">
+      <bpmn:documentation>PI-ID: I03. ECRSA: E(제거), C(결합), R(재배열), A(자동화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 32h → TO-BE 12h, 약 63% 단축. 개선 내용: 추출 요청·메일 전달을 제거하고 수집을 앞단으로 재배열해 소스 결합·형식 변환을 자동화. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Data_To_Pipeline</bpmn:incoming>
+      <bpmn:outgoing>Flow_Pipeline_To_DB</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_DB_Design" name="I04 DB 설계&#10;[C/S/A · 24h→8h]">
+      <bpmn:documentation>PI-ID: I04. ECRSA: C(결합), S(단순화), A(자동화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 24h → TO-BE 8h, 약 67% 단축. 개선 내용: 분산 파일을 중앙 DB로 결합하고 스키마·Key·단위를 표준화. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Pipeline_To_DB</bpmn:incoming>
+      <bpmn:outgoing>Flow_DB_To_Feasibility</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_AI_Feasibility" name="AI 적용 타당성 검토">
+      <bpmn:incoming>Flow_DB_To_Feasibility</bpmn:incoming>
+      <bpmn:outgoing>Flow_Feasibility_To_Environment_Merge</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Environment_Merge" name="환경 설정 진입 합류" gatewayDirection="Converging">
+      <bpmn:incoming>Flow_Feasibility_To_Environment_Merge</bpmn:incoming>
+      <bpmn:incoming>Flow_Data_Quality_Rework</bpmn:incoming>
+      <bpmn:outgoing>Flow_Environment_Merge_To_Development</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Development_Environment" name="I05 개발 환경 및 도구 설정&#10;[E/S/A · 8h→30분]">
+      <bpmn:documentation>PI-ID: I05. ECRSA: E(제거), S(단순화), A(자동화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 8h → TO-BE 30분, 약 94% 단축. 개선 내용: 개인별 설치와 이메일 코드 공유를 제거하고 서버·code-server 환경을 표준 제공. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Environment_Merge_To_Development</bpmn:incoming>
+      <bpmn:outgoing>Flow_Development_To_Fork</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:parallelGateway id="Gateway_Preprocessing_Fork" name="전처리 병렬 분기" gatewayDirection="Diverging">
+      <bpmn:incoming>Flow_Development_To_Fork</bpmn:incoming>
+      <bpmn:outgoing>Flow_Fork_To_Outlier</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Fork_To_Label</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:task id="Task_Outlier_Removal" name="I06 이상치 제거&#10;[E/S/A · 12h→3h]">
+      <bpmn:documentation>PI-ID: I06. ECRSA: E(제거), S(단순화), A(자동화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 12h → TO-BE 3h, 약 75% 단축. 개선 내용: 반복 수작업 정제를 제거하고 이상치 기준을 규칙화해 재사용 가능한 Pipeline으로 자동 적용. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Fork_To_Outlier</bpmn:incoming>
+      <bpmn:outgoing>Flow_Outlier_To_Join</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Label_Generation" name="I07 Label 생성&#10;[C/S/A · 40h→16h]">
+      <bpmn:documentation>PI-ID: I07. ECRSA: C(결합), S(단순화), A(자동화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 40h → TO-BE 16h, 약 60% 단축. 개선 내용: 판정 정보와 원천 데이터를 연결하고 Label 체계·도구를 표준화해 보조 자동화. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Fork_To_Label</bpmn:incoming>
+      <bpmn:outgoing>Flow_Label_To_Join</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:parallelGateway id="Gateway_Preprocessing_Join" name="전처리 병렬 합류" gatewayDirection="Converging">
+      <bpmn:incoming>Flow_Outlier_To_Join</bpmn:incoming>
+      <bpmn:incoming>Flow_Label_To_Join</bpmn:incoming>
+      <bpmn:outgoing>Flow_Join_To_Data_Quality</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:task id="Task_Data_Quality_Check" name="I08 Data 품질확인&#10;[E/S/A · 12h→2h]">
+      <bpmn:documentation>PI-ID: I08. ECRSA: E(제거), S(단순화), A(자동화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 12h → TO-BE 2h, 약 83% 단축. 개선 내용: 표본 점검과 수기 보고를 제거하고 품질 규칙 검사·리포트를 자동화. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Join_To_Data_Quality</bpmn:incoming>
+      <bpmn:outgoing>Flow_Data_Quality_To_Result</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Data_Quality_Result" name="품질 기준 충족?" gatewayDirection="Diverging" default="Flow_Data_Quality_Rework">
+      <bpmn:incoming>Flow_Data_Quality_To_Result</bpmn:incoming>
+      <bpmn:outgoing>Flow_Data_Quality_Rework</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Data_Quality_Approved</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Training_Dataset" name="I09 AI Training Data Set 구축&#10;[E/C/A · 8h→1h]">
+      <bpmn:documentation>PI-ID: I09. ECRSA: E(제거), C(결합), A(자동화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 8h → TO-BE 1h, 약 88% 단축. 개선 내용: 최신 파일 탐색·복사를 제거하고 정제·Label 데이터를 결합해 Dataset 분할·버전을 자동 생성. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Data_Quality_Approved</bpmn:incoming>
+      <bpmn:outgoing>Flow_Training_To_Model_Selection</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Model_Selection" name="이상 감지 모델 선정">
+      <bpmn:incoming>Flow_Training_To_Model_Selection</bpmn:incoming>
+      <bpmn:outgoing>Flow_Model_Selection_To_Detect</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Detect_Logic" name="I10 Detect logic 설계&#10;[C/S/A · 24h→8h]">
+      <bpmn:documentation>PI-ID: I10. ECRSA: C(결합), S(단순화), A(자동화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 24h → TO-BE 8h, 약 67% 단축. 개선 내용: 전문가 규칙을 설정형 Logic으로 결합·단순화하고 과거 Data 검증을 자동화. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Model_Selection_To_Detect</bpmn:incoming>
+      <bpmn:outgoing>Flow_Detect_To_Architecture</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Model_Architecture" name="I11 모델 구조 설계 및 구현&#10;[E/C/S · 80h→40h]">
+      <bpmn:documentation>PI-ID: I11. ECRSA: E(제거), C(결합), S(단순화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 80h → TO-BE 40h, 약 50% 단축. 개선 내용: 중복 Prototype을 제거하고 공통 Module·Repository·Interface로 결합·표준화. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Detect_To_Architecture</bpmn:incoming>
+      <bpmn:outgoing>Flow_Architecture_To_Training</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Model_Training" name="I12 모델 학습&#10;[E/R/A · 40h→16h]">
+      <bpmn:documentation>PI-ID: I12. ECRSA: E(제거), R(재배열), A(자동화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 40h → TO-BE 16h, 약 60% 단축. 개선 내용: 불필요한 전체 재학습을 제거하고 실험을 재배열·병렬화해 학습 Pipeline·실험 추적을 자동화. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Architecture_To_Training</bpmn:incoming>
+      <bpmn:outgoing>Flow_Model_Training_To_Test</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Test_Environment" name="테스트 환경 및 도구 구성">
+      <bpmn:incoming>Flow_Model_Training_To_Test</bpmn:incoming>
+      <bpmn:outgoing>Flow_Test_To_Function_Merge</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Function_Merge" name="기능검증 진입 합류" gatewayDirection="Converging">
+      <bpmn:incoming>Flow_Test_To_Function_Merge</bpmn:incoming>
+      <bpmn:incoming>Flow_Parameter_To_Function_Merge</bpmn:incoming>
+      <bpmn:outgoing>Flow_Function_Merge_To_Validation</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Function_Validation" name="기능검증 수행">
+      <bpmn:incoming>Flow_Function_Merge_To_Validation</bpmn:incoming>
+      <bpmn:outgoing>Flow_Function_Validation_To_Result</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Function_Result" name="기능 기준 충족?" gatewayDirection="Diverging" default="Flow_Function_Rework">
+      <bpmn:incoming>Flow_Function_Validation_To_Result</bpmn:incoming>
+      <bpmn:outgoing>Flow_Function_Rework</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Function_Approved</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Code_Improvement" name="I13 코드 개선&#10;[E/C/A · 16h→4h]">
+      <bpmn:documentation>PI-ID: I13. ECRSA: E(제거), C(결합), A(자동화). 대표 1건 또는 1회 기준 추정 Lead Time(작업+대기): AS-IS 16h → TO-BE 4h, 약 75% 단축. 개선 내용: 메일 사본과 수동 병합을 제거하고 Git·Issue·자동 회귀검증으로 통합. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Function_Rework</bpmn:incoming>
+      <bpmn:outgoing>Flow_Code_To_Parameter</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Parameter_Optimization" name="Parameter 최적화">
+      <bpmn:incoming>Flow_Code_To_Parameter</bpmn:incoming>
+      <bpmn:outgoing>Flow_Parameter_To_Function_Merge</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Monitoring" name="I14 모니터링 실행&#10;[E/R/A · 4h→15분]">
+      <bpmn:documentation>PI-ID: I14. ECRSA: E(제거), R(재배열), A(자동화). 모니터링 1회 기준 추정 Lead Time(작업+대기): AS-IS 4h → TO-BE 15분, 약 94% 단축. 개선 내용: 수동 Export·실행을 제거하고 주기 작업을 상시 Monitoring·자동 알림으로 재배열. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Function_Approved</bpmn:incoming>
+      <bpmn:outgoing>Flow_Monitoring_To_Anomaly</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Anomaly_Detection" name="I15 이상점 감지&#10;[E/C/S/A · 2h→5분]">
+      <bpmn:documentation>PI-ID: I15. ECRSA: E(제거), C(결합), S(단순화), A(자동화). 이상 후보 1건 기준 추정 Lead Time(작업+대기): AS-IS 2h → TO-BE 5분, 약 96% 단축. 개선 내용: 육안 재확인·QMS 재입력을 제거하고 탐지 결과와 공정 이력을 결합해 기준·알림을 표준 자동화. 실측 전 가설값이며 1일=8 업무시간으로 환산한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Monitoring_To_Anomaly</bpmn:incoming>
+      <bpmn:outgoing>Flow_Anomaly_To_Conformity</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Defect_Conformity" name="불량 정합성 확인">
+      <bpmn:incoming>Flow_Anomaly_To_Conformity</bpmn:incoming>
+      <bpmn:outgoing>Flow_Conformity_To_Closed</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Closed_Loop" name="Closed Loop 구축">
+      <bpmn:incoming>Flow_Conformity_To_Closed</bpmn:incoming>
+      <bpmn:outgoing>Flow_Closed_To_End</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Process" name="종료">
+      <bpmn:incoming>Flow_Closed_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Receipt" sourceRef="StartEvent_Process" targetRef="Task_Defect_Receipt" />
+    <bpmn:sequenceFlow id="Flow_Receipt_To_Product_Info" sourceRef="Task_Defect_Receipt" targetRef="Task_Product_Info_Check" />
+    <bpmn:sequenceFlow id="Flow_Product_Info_To_Result" sourceRef="Task_Product_Info_Check" targetRef="Gateway_Product_Info_Result" />
+    <bpmn:sequenceFlow id="Flow_Product_Info_Insufficient" name="추가 분석 필요" sourceRef="Gateway_Product_Info_Result" targetRef="Task_Physical_Analysis" />
+    <bpmn:sequenceFlow id="Flow_Product_Info_Sufficient" name="정보 충분" sourceRef="Gateway_Product_Info_Result" targetRef="Gateway_Process_Analysis_Merge">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">productInfoSufficient == true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Physical_To_Process_Merge" sourceRef="Task_Physical_Analysis" targetRef="Gateway_Process_Analysis_Merge" />
+    <bpmn:sequenceFlow id="Flow_Process_Merge_To_Analysis" sourceRef="Gateway_Process_Analysis_Merge" targetRef="Task_Process_Analysis" />
+    <bpmn:sequenceFlow id="Flow_Process_To_Data" sourceRef="Task_Process_Analysis" targetRef="Task_Data_Acquisition" />
+    <bpmn:sequenceFlow id="Flow_Data_To_Pipeline" sourceRef="Task_Data_Acquisition" targetRef="Task_Data_Pipeline" />
+    <bpmn:sequenceFlow id="Flow_Pipeline_To_DB" sourceRef="Task_Data_Pipeline" targetRef="Task_DB_Design" />
+    <bpmn:sequenceFlow id="Flow_DB_To_Feasibility" sourceRef="Task_DB_Design" targetRef="Task_AI_Feasibility" />
+    <bpmn:sequenceFlow id="Flow_Feasibility_To_Environment_Merge" sourceRef="Task_AI_Feasibility" targetRef="Gateway_Environment_Merge" />
+    <bpmn:sequenceFlow id="Flow_Environment_Merge_To_Development" sourceRef="Gateway_Environment_Merge" targetRef="Task_Development_Environment" />
+    <bpmn:sequenceFlow id="Flow_Development_To_Fork" sourceRef="Task_Development_Environment" targetRef="Gateway_Preprocessing_Fork" />
+    <bpmn:sequenceFlow id="Flow_Fork_To_Outlier" sourceRef="Gateway_Preprocessing_Fork" targetRef="Task_Outlier_Removal" />
+    <bpmn:sequenceFlow id="Flow_Fork_To_Label" sourceRef="Gateway_Preprocessing_Fork" targetRef="Task_Label_Generation" />
+    <bpmn:sequenceFlow id="Flow_Outlier_To_Join" sourceRef="Task_Outlier_Removal" targetRef="Gateway_Preprocessing_Join" />
+    <bpmn:sequenceFlow id="Flow_Label_To_Join" sourceRef="Task_Label_Generation" targetRef="Gateway_Preprocessing_Join" />
+    <bpmn:sequenceFlow id="Flow_Join_To_Data_Quality" sourceRef="Gateway_Preprocessing_Join" targetRef="Task_Data_Quality_Check" />
+    <bpmn:sequenceFlow id="Flow_Data_Quality_To_Result" sourceRef="Task_Data_Quality_Check" targetRef="Gateway_Data_Quality_Result" />
+    <bpmn:sequenceFlow id="Flow_Data_Quality_Rework" name="미달 / 재작업" sourceRef="Gateway_Data_Quality_Result" targetRef="Gateway_Environment_Merge" />
+    <bpmn:sequenceFlow id="Flow_Data_Quality_Approved" name="적합" sourceRef="Gateway_Data_Quality_Result" targetRef="Task_Training_Dataset">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">dataQualityApproved == true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Training_To_Model_Selection" sourceRef="Task_Training_Dataset" targetRef="Task_Model_Selection" />
+    <bpmn:sequenceFlow id="Flow_Model_Selection_To_Detect" sourceRef="Task_Model_Selection" targetRef="Task_Detect_Logic" />
+    <bpmn:sequenceFlow id="Flow_Detect_To_Architecture" sourceRef="Task_Detect_Logic" targetRef="Task_Model_Architecture" />
+    <bpmn:sequenceFlow id="Flow_Architecture_To_Training" sourceRef="Task_Model_Architecture" targetRef="Task_Model_Training" />
+    <bpmn:sequenceFlow id="Flow_Model_Training_To_Test" sourceRef="Task_Model_Training" targetRef="Task_Test_Environment" />
+    <bpmn:sequenceFlow id="Flow_Test_To_Function_Merge" sourceRef="Task_Test_Environment" targetRef="Gateway_Function_Merge" />
+    <bpmn:sequenceFlow id="Flow_Function_Merge_To_Validation" sourceRef="Gateway_Function_Merge" targetRef="Task_Function_Validation" />
+    <bpmn:sequenceFlow id="Flow_Function_Validation_To_Result" sourceRef="Task_Function_Validation" targetRef="Gateway_Function_Result" />
+    <bpmn:sequenceFlow id="Flow_Function_Rework" name="개선 필요" sourceRef="Gateway_Function_Result" targetRef="Task_Code_Improvement" />
+    <bpmn:sequenceFlow id="Flow_Code_To_Parameter" sourceRef="Task_Code_Improvement" targetRef="Task_Parameter_Optimization" />
+    <bpmn:sequenceFlow id="Flow_Parameter_To_Function_Merge" sourceRef="Task_Parameter_Optimization" targetRef="Gateway_Function_Merge" />
+    <bpmn:sequenceFlow id="Flow_Function_Approved" name="검증 완료" sourceRef="Gateway_Function_Result" targetRef="Task_Monitoring">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">functionApproved == true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Monitoring_To_Anomaly" sourceRef="Task_Monitoring" targetRef="Task_Anomaly_Detection" />
+    <bpmn:sequenceFlow id="Flow_Anomaly_To_Conformity" sourceRef="Task_Anomaly_Detection" targetRef="Task_Defect_Conformity" />
+    <bpmn:sequenceFlow id="Flow_Conformity_To_Closed" sourceRef="Task_Defect_Conformity" targetRef="Task_Closed_Loop" />
+    <bpmn:sequenceFlow id="Flow_Closed_To_End" sourceRef="Task_Closed_Loop" targetRef="EndEvent_Process" />
+    <bpmn:textAnnotation id="TextAnnotation_TOBE_Legend">
+      <bpmn:text>TO-BE / ECRSA / 추정 LT
+E 제거 · C 결합 · R 재배열 · S 단순화 · A 자동화
+LT = 작업+대기시간, 1일=8h, 실측 전 가설
+I01~I13 대표 1건/1회 · I14 모니터링 회차당 · I15 이상 후보 건당
+흰색 비개선 단계 시간은 미산정</bpmn:text>
+    </bpmn:textAnnotation>
+  </bpmn:process>
+  <bpmn:collaboration id="Collaboration_TOBE_Defect_AI_ClosedLoop">
+    <bpmn:participant id="Participant_TOBE_Main" name="TO-BE 프로세스" processRef="Process_TOBE_Defect_AI_ClosedLoop" />
+  </bpmn:collaboration>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_TOBE_Defect_AI_ClosedLoop">
+    <bpmndi:BPMNPlane id="BPMNPlane_TOBE_Defect_AI_ClosedLoop" bpmnElement="Collaboration_TOBE_Defect_AI_ClosedLoop">
+      <bpmndi:BPMNShape id="Participant_TOBE_Main_di" bpmnElement="Participant_TOBE_Main" isHorizontal="true">
+        <dc:Bounds x="60" y="100" width="2530" height="1380" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Defect_Definition_di" bpmnElement="Lane_Defect_Definition" isHorizontal="true" bioc:fill="#FFFFFF" bioc:stroke="#94A3B8">
+        <dc:Bounds x="90" y="100" width="2500" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Defect_Factor_Analysis_di" bpmnElement="Lane_Defect_Factor_Analysis" isHorizontal="true" bioc:fill="#F8FAFC" bioc:stroke="#94A3B8">
+        <dc:Bounds x="90" y="300" width="2500" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Production_Data_di" bpmnElement="Lane_Production_Data" isHorizontal="true" bioc:fill="#FFFFFF" bioc:stroke="#94A3B8">
+        <dc:Bounds x="90" y="500" width="2500" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_AI_Environment_Preprocessing_di" bpmnElement="Lane_AI_Environment_Preprocessing" isHorizontal="true" bioc:fill="#F8FAFC" bioc:stroke="#94A3B8">
+        <dc:Bounds x="90" y="700" width="2500" height="300" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_AI_Model_Development_di" bpmnElement="Lane_AI_Model_Development" isHorizontal="true" bioc:fill="#FFFFFF" bioc:stroke="#94A3B8">
+        <dc:Bounds x="90" y="1000" width="2500" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Monitoring_Optimization_di" bpmnElement="Lane_Monitoring_Optimization" isHorizontal="true" bioc:fill="#F8FAFC" bioc:stroke="#94A3B8">
+        <dc:Bounds x="90" y="1260" width="2500" height="220" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Process_di" bpmnElement="StartEvent_Process">
+        <dc:Bounds x="180" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="176" y="222" width="44" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Defect_Receipt_di" bpmnElement="Task_Defect_Receipt">
+        <dc:Bounds x="250" y="160" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Product_Info_Check_di" bpmnElement="Task_Product_Info_Check" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="480" y="150" width="230" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Product_Info_Result_di" bpmnElement="Gateway_Product_Info_Result" isMarkerVisible="false">
+        <dc:Bounds x="760" y="175" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="725" y="242" width="130" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Physical_Analysis_di" bpmnElement="Task_Physical_Analysis">
+        <dc:Bounds x="300" y="360" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Process_Analysis_Merge_di" bpmnElement="Gateway_Process_Analysis_Merge" isMarkerVisible="false">
+        <dc:Bounds x="530" y="370" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="500" y="436" width="120" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Process_Analysis_di" bpmnElement="Task_Process_Analysis" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="640" y="350" width="250" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Data_Acquisition_di" bpmnElement="Task_Data_Acquisition">
+        <dc:Bounds x="300" y="560" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Data_Pipeline_di" bpmnElement="Task_Data_Pipeline" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="540" y="550" width="230" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DB_Design_di" bpmnElement="Task_DB_Design" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="830" y="550" width="220" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AI_Feasibility_di" bpmnElement="Task_AI_Feasibility">
+        <dc:Bounds x="300" y="810" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Environment_Merge_di" bpmnElement="Gateway_Environment_Merge" isMarkerVisible="false">
+        <dc:Bounds x="520" y="820" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="480" y="785" width="140" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Development_Environment_di" bpmnElement="Task_Development_Environment" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="610" y="800" width="230" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Preprocessing_Fork_di" bpmnElement="Gateway_Preprocessing_Fork">
+        <dc:Bounds x="890" y="820" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="855" y="886" width="130" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Outlier_Removal_di" bpmnElement="Task_Outlier_Removal" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="980" y="720" width="220" height="90" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Label_Generation_di" bpmnElement="Task_Label_Generation" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="980" y="880" width="220" height="90" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Preprocessing_Join_di" bpmnElement="Gateway_Preprocessing_Join">
+        <dc:Bounds x="1250" y="820" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1215" y="886" width="130" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Data_Quality_Check_di" bpmnElement="Task_Data_Quality_Check" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="1340" y="800" width="220" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Data_Quality_Result_di" bpmnElement="Gateway_Data_Quality_Result" isMarkerVisible="false">
+        <dc:Bounds x="1610" y="820" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1575" y="886" width="130" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Training_Dataset_di" bpmnElement="Task_Training_Dataset" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="1720" y="800" width="250" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Model_Selection_di" bpmnElement="Task_Model_Selection">
+        <dc:Bounds x="300" y="1090" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Detect_Logic_di" bpmnElement="Task_Detect_Logic" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="540" y="1080" width="220" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Model_Architecture_di" bpmnElement="Task_Model_Architecture" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="810" y="1080" width="230" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Model_Training_di" bpmnElement="Task_Model_Training" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="1100" y="1080" width="220" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Test_Environment_di" bpmnElement="Task_Test_Environment">
+        <dc:Bounds x="1380" y="1090" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Function_Merge_di" bpmnElement="Gateway_Function_Merge" isMarkerVisible="false">
+        <dc:Bounds x="1610" y="1105" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1575" y="1068" width="120" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Function_Validation_di" bpmnElement="Task_Function_Validation">
+        <dc:Bounds x="1690" y="1090" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Function_Result_di" bpmnElement="Gateway_Function_Result" isMarkerVisible="false">
+        <dc:Bounds x="1920" y="1100" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1885" y="1166" width="130" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Code_Improvement_di" bpmnElement="Task_Code_Improvement" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="2030" y="1080" width="220" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Parameter_Optimization_di" bpmnElement="Task_Parameter_Optimization">
+        <dc:Bounds x="2300" y="1090" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Monitoring_di" bpmnElement="Task_Monitoring" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="300" y="1320" width="230" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Anomaly_Detection_di" bpmnElement="Task_Anomaly_Detection" bioc:fill="#DDEBF7" bioc:stroke="#2563EB">
+        <dc:Bounds x="590" y="1320" width="230" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Defect_Conformity_di" bpmnElement="Task_Defect_Conformity">
+        <dc:Bounds x="880" y="1330" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Closed_Loop_di" bpmnElement="Task_Closed_Loop">
+        <dc:Bounds x="1120" y="1330" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Process_di" bpmnElement="EndEvent_Process">
+        <dc:Bounds x="1370" y="1352" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1366" y="1392" width="44" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_TOBE_Legend_di" bpmnElement="TextAnnotation_TOBE_Legend">
+        <dc:Bounds x="1020" y="125" width="1180" height="135" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Receipt_di" bpmnElement="Flow_Start_To_Receipt">
+        <di:waypoint x="216" y="200" />
+        <di:waypoint x="250" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Receipt_To_Product_Info_di" bpmnElement="Flow_Receipt_To_Product_Info">
+        <di:waypoint x="420" y="200" />
+        <di:waypoint x="480" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Product_Info_To_Result_di" bpmnElement="Flow_Product_Info_To_Result">
+        <di:waypoint x="710" y="200" />
+        <di:waypoint x="760" y="205" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Product_Info_Insufficient_di" bpmnElement="Flow_Product_Info_Insufficient">
+        <di:waypoint x="790" y="235" />
+        <di:waypoint x="790" y="280" />
+        <di:waypoint x="390" y="280" />
+        <di:waypoint x="390" y="360" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="435" y="258" width="112" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Product_Info_Sufficient_di" bpmnElement="Flow_Product_Info_Sufficient">
+        <di:waypoint x="820" y="205" />
+        <di:waypoint x="900" y="205" />
+        <di:waypoint x="900" y="340" />
+        <di:waypoint x="560" y="340" />
+        <di:waypoint x="560" y="370" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="790" y="318" width="75" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Physical_To_Process_Merge_di" bpmnElement="Flow_Physical_To_Process_Merge">
+        <di:waypoint x="480" y="400" />
+        <di:waypoint x="530" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Process_Merge_To_Analysis_di" bpmnElement="Flow_Process_Merge_To_Analysis">
+        <di:waypoint x="590" y="400" />
+        <di:waypoint x="640" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Process_To_Data_di" bpmnElement="Flow_Process_To_Data">
+        <di:waypoint x="765" y="450" />
+        <di:waypoint x="765" y="480" />
+        <di:waypoint x="385" y="480" />
+        <di:waypoint x="385" y="560" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Data_To_Pipeline_di" bpmnElement="Flow_Data_To_Pipeline">
+        <di:waypoint x="470" y="600" />
+        <di:waypoint x="540" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Pipeline_To_DB_di" bpmnElement="Flow_Pipeline_To_DB">
+        <di:waypoint x="770" y="600" />
+        <di:waypoint x="830" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DB_To_Feasibility_di" bpmnElement="Flow_DB_To_Feasibility">
+        <di:waypoint x="940" y="650" />
+        <di:waypoint x="940" y="680" />
+        <di:waypoint x="385" y="680" />
+        <di:waypoint x="385" y="810" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Feasibility_To_Environment_Merge_di" bpmnElement="Flow_Feasibility_To_Environment_Merge">
+        <di:waypoint x="470" y="850" />
+        <di:waypoint x="520" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Environment_Merge_To_Development_di" bpmnElement="Flow_Environment_Merge_To_Development">
+        <di:waypoint x="580" y="850" />
+        <di:waypoint x="610" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Development_To_Fork_di" bpmnElement="Flow_Development_To_Fork">
+        <di:waypoint x="840" y="850" />
+        <di:waypoint x="890" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Fork_To_Outlier_di" bpmnElement="Flow_Fork_To_Outlier">
+        <di:waypoint x="920" y="820" />
+        <di:waypoint x="920" y="765" />
+        <di:waypoint x="980" y="765" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Fork_To_Label_di" bpmnElement="Flow_Fork_To_Label">
+        <di:waypoint x="920" y="880" />
+        <di:waypoint x="920" y="925" />
+        <di:waypoint x="980" y="925" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Outlier_To_Join_di" bpmnElement="Flow_Outlier_To_Join">
+        <di:waypoint x="1200" y="765" />
+        <di:waypoint x="1265" y="835" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Label_To_Join_di" bpmnElement="Flow_Label_To_Join">
+        <di:waypoint x="1200" y="925" />
+        <di:waypoint x="1265" y="865" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Join_To_Data_Quality_di" bpmnElement="Flow_Join_To_Data_Quality">
+        <di:waypoint x="1310" y="850" />
+        <di:waypoint x="1340" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Data_Quality_To_Result_di" bpmnElement="Flow_Data_Quality_To_Result">
+        <di:waypoint x="1560" y="850" />
+        <di:waypoint x="1610" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Data_Quality_Rework_di" bpmnElement="Flow_Data_Quality_Rework">
+        <di:waypoint x="1640" y="820" />
+        <di:waypoint x="1640" y="710" />
+        <di:waypoint x="550" y="710" />
+        <di:waypoint x="550" y="820" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1130" y="688" width="112" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Data_Quality_Approved_di" bpmnElement="Flow_Data_Quality_Approved">
+        <di:waypoint x="1670" y="850" />
+        <di:waypoint x="1720" y="850" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1677" y="825" width="38" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Training_To_Model_Selection_di" bpmnElement="Flow_Training_To_Model_Selection">
+        <di:waypoint x="1845" y="900" />
+        <di:waypoint x="1845" y="980" />
+        <di:waypoint x="385" y="980" />
+        <di:waypoint x="385" y="1090" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Model_Selection_To_Detect_di" bpmnElement="Flow_Model_Selection_To_Detect">
+        <di:waypoint x="470" y="1130" />
+        <di:waypoint x="540" y="1130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Detect_To_Architecture_di" bpmnElement="Flow_Detect_To_Architecture">
+        <di:waypoint x="760" y="1130" />
+        <di:waypoint x="810" y="1130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Architecture_To_Training_di" bpmnElement="Flow_Architecture_To_Training">
+        <di:waypoint x="1040" y="1130" />
+        <di:waypoint x="1100" y="1130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Model_Training_To_Test_di" bpmnElement="Flow_Model_Training_To_Test">
+        <di:waypoint x="1320" y="1130" />
+        <di:waypoint x="1380" y="1130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Test_To_Function_Merge_di" bpmnElement="Flow_Test_To_Function_Merge">
+        <di:waypoint x="1570" y="1130" />
+        <di:waypoint x="1610" y="1130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Function_Merge_To_Validation_di" bpmnElement="Flow_Function_Merge_To_Validation">
+        <di:waypoint x="1660" y="1130" />
+        <di:waypoint x="1690" y="1130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Function_Validation_To_Result_di" bpmnElement="Flow_Function_Validation_To_Result">
+        <di:waypoint x="1880" y="1130" />
+        <di:waypoint x="1920" y="1130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Function_Rework_di" bpmnElement="Flow_Function_Rework">
+        <di:waypoint x="1980" y="1130" />
+        <di:waypoint x="2030" y="1130" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1983" y="1105" width="72" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Code_To_Parameter_di" bpmnElement="Flow_Code_To_Parameter">
+        <di:waypoint x="2250" y="1130" />
+        <di:waypoint x="2300" y="1130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Parameter_To_Function_Merge_di" bpmnElement="Flow_Parameter_To_Function_Merge">
+        <di:waypoint x="2490" y="1130" />
+        <di:waypoint x="2550" y="1130" />
+        <di:waypoint x="2550" y="1020" />
+        <di:waypoint x="1635" y="1020" />
+        <di:waypoint x="1635" y="1105" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Function_Approved_di" bpmnElement="Flow_Function_Approved">
+        <di:waypoint x="1950" y="1160" />
+        <di:waypoint x="1950" y="1240" />
+        <di:waypoint x="415" y="1240" />
+        <di:waypoint x="415" y="1320" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1380" y="1218" width="72" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Monitoring_To_Anomaly_di" bpmnElement="Flow_Monitoring_To_Anomaly">
+        <di:waypoint x="530" y="1370" />
+        <di:waypoint x="590" y="1370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Anomaly_To_Conformity_di" bpmnElement="Flow_Anomaly_To_Conformity">
+        <di:waypoint x="820" y="1370" />
+        <di:waypoint x="880" y="1370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Conformity_To_Closed_di" bpmnElement="Flow_Conformity_To_Closed">
+        <di:waypoint x="1070" y="1370" />
+        <di:waypoint x="1120" y="1370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Closed_To_End_di" bpmnElement="Flow_Closed_To_End">
+        <di:waypoint x="1310" y="1370" />
+        <di:waypoint x="1370" y="1370" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

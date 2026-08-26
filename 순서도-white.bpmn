@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_Defect_AI_ClosedLoop"
+                  targetNamespace="https://example.com/bpmn/defect-ai-closed-loop"
+                  exporter="OpenAI Codex"
+                  exporterVersion="1.0">
+  <bpmn:process id="Process_Defect_AI_ClosedLoop"
+                name="불량 현상 접수 ~ Closed Loop 구축"
+                isExecutable="false">
+    <bpmn:documentation>원본 이미지의 회색 요약 칸은 swim lane 이름으로 변환했고, 흰색 프로세스 노드와 화살표를 그대로 반영했다. BPMN 완결성을 위해 시작 및 종료 이벤트를 추가했다.</bpmn:documentation>
+
+    <bpmn:laneSet id="LaneSet_Main">
+      <bpmn:lane id="Lane_Defect_Definition" name="불량 분석 및 과제 정의">
+        <bpmn:flowNodeRef>StartEvent_Process</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Defect_Receipt</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Product_Info</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Defect_Factor_Analysis" name="불량 협의 인자 분석">
+        <bpmn:flowNodeRef>Task_Physical_Analysis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Process_Analysis</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Production_Data" name="양산 데이터 확보">
+        <bpmn:flowNodeRef>Task_Data_Acquisition</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Data_Pipeline</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DB_Design</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_AI_Environment_Preprocessing" name="AI 구축 환경 준비 데이터 전처리">
+        <bpmn:flowNodeRef>Task_AI_Feasibility</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Development_Environment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Outlier_Removal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Label_Generation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Data_Quality</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Training_Dataset</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_AI_Model_Development" name="AI 모델 설계 및 개발">
+        <bpmn:flowNodeRef>Task_Model_Selection</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Detect_Logic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Model_Architecture</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Model_Training</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Test_Environment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Function_Validation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Code_Improvement</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Parameter_Optimization</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Monitoring_Optimization" name="모니터링 및 이상감지 최적화">
+        <bpmn:flowNodeRef>Task_Monitoring</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Anomaly_Detection</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Defect_Conformity</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Closed_Loop</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Process</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Process" name="시작">
+      <bpmn:outgoing>Flow_Start_To_Receipt</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Defect_Receipt" name="불량 현상 접수">
+      <bpmn:incoming>Flow_Start_To_Receipt</bpmn:incoming>
+      <bpmn:outgoing>Flow_Receipt_To_Product_Info</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Product_Info"
+                           name="제품 정보 확인"
+                           gatewayDirection="Diverging">
+      <bpmn:documentation>원본 분기 표기를 유지함: 실물 분석 경로는 Yes/No, 공정 분석 경로는 Yes.</bpmn:documentation>
+      <bpmn:incoming>Flow_Receipt_To_Product_Info</bpmn:incoming>
+      <bpmn:outgoing>Flow_Product_Info_To_Physical</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Product_Info_To_Process</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="Task_Physical_Analysis" name="실물 분석 (eFA, pFA)">
+      <bpmn:incoming>Flow_Product_Info_To_Physical</bpmn:incoming>
+      <bpmn:outgoing>Flow_Physical_To_Process</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Process_Analysis" name="공정 분석 (Commonality)">
+      <bpmn:incoming>Flow_Product_Info_To_Process</bpmn:incoming>
+      <bpmn:incoming>Flow_Physical_To_Process</bpmn:incoming>
+      <bpmn:outgoing>Flow_Process_To_Data</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Data_Acquisition" name="Data 확보 및 검증">
+      <bpmn:incoming>Flow_Process_To_Data</bpmn:incoming>
+      <bpmn:outgoing>Flow_Data_To_Pipeline</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Data_Pipeline" name="Data Pipeline 설계">
+      <bpmn:incoming>Flow_Data_To_Pipeline</bpmn:incoming>
+      <bpmn:outgoing>Flow_Pipeline_To_DB</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_DB_Design" name="DB 설계">
+      <bpmn:incoming>Flow_Pipeline_To_DB</bpmn:incoming>
+      <bpmn:outgoing>Flow_DB_To_Feasibility</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_AI_Feasibility" name="AI 적용 타당성 검토">
+      <bpmn:incoming>Flow_DB_To_Feasibility</bpmn:incoming>
+      <bpmn:outgoing>Flow_Feasibility_To_Environment</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Development_Environment" name="개발 환경 및 도구 설정">
+      <bpmn:incoming>Flow_Feasibility_To_Environment</bpmn:incoming>
+      <bpmn:incoming>Flow_Data_Quality_Rework</bpmn:incoming>
+      <bpmn:outgoing>Flow_Environment_To_Outlier</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Environment_To_Label</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Outlier_Removal" name="이상치 제거">
+      <bpmn:incoming>Flow_Environment_To_Outlier</bpmn:incoming>
+      <bpmn:outgoing>Flow_Outlier_To_Data_Quality</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Label_Generation" name="Label 생성">
+      <bpmn:incoming>Flow_Environment_To_Label</bpmn:incoming>
+      <bpmn:outgoing>Flow_Label_To_Data_Quality</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Data_Quality"
+                           name="Data 품질확인"
+                           gatewayDirection="Mixed">
+      <bpmn:documentation>오른쪽은 AI Training Data Set 구축으로 진행하고, 상단 피드백 루프는 개발 환경 및 도구 설정으로 돌아간다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Outlier_To_Data_Quality</bpmn:incoming>
+      <bpmn:incoming>Flow_Label_To_Data_Quality</bpmn:incoming>
+      <bpmn:outgoing>Flow_Data_Quality_Rework</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Data_Quality_To_Training</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Training_Dataset" name="AI Training Data Set 구축">
+      <bpmn:incoming>Flow_Data_Quality_To_Training</bpmn:incoming>
+      <bpmn:outgoing>Flow_Training_To_Model_Selection</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Model_Selection" name="이상 감지 모델 선정">
+      <bpmn:incoming>Flow_Training_To_Model_Selection</bpmn:incoming>
+      <bpmn:outgoing>Flow_Model_Selection_To_Detect_Logic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Detect_Logic" name="Detect logic 설계">
+      <bpmn:incoming>Flow_Model_Selection_To_Detect_Logic</bpmn:incoming>
+      <bpmn:outgoing>Flow_Detect_Logic_To_Architecture</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Model_Architecture" name="모델 구조 설계 및 구현">
+      <bpmn:incoming>Flow_Detect_Logic_To_Architecture</bpmn:incoming>
+      <bpmn:outgoing>Flow_Architecture_To_Training</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Model_Training" name="모델 학습">
+      <bpmn:incoming>Flow_Architecture_To_Training</bpmn:incoming>
+      <bpmn:outgoing>Flow_Model_Training_To_Test_Environment</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Test_Environment" name="테스트 환경 및 도구 구성">
+      <bpmn:incoming>Flow_Model_Training_To_Test_Environment</bpmn:incoming>
+      <bpmn:outgoing>Flow_Test_Environment_To_Function_Validation</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Function_Validation"
+                           name="기능검증"
+                           gatewayDirection="Mixed">
+      <bpmn:documentation>오른쪽은 코드 개선 및 Parameter 최적화 후 재검증하는 루프이고, 하단 경로는 모니터링 실행으로 진행한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Test_Environment_To_Function_Validation</bpmn:incoming>
+      <bpmn:incoming>Flow_Parameter_To_Function_Validation</bpmn:incoming>
+      <bpmn:outgoing>Flow_Function_Validation_To_Code</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Function_Validation_To_Monitoring</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Code_Improvement" name="코드 개선">
+      <bpmn:incoming>Flow_Function_Validation_To_Code</bpmn:incoming>
+      <bpmn:outgoing>Flow_Code_To_Parameter</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Parameter_Optimization" name="Parameter 최적화">
+      <bpmn:incoming>Flow_Code_To_Parameter</bpmn:incoming>
+      <bpmn:outgoing>Flow_Parameter_To_Function_Validation</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Monitoring" name="모니터링 실행">
+      <bpmn:incoming>Flow_Function_Validation_To_Monitoring</bpmn:incoming>
+      <bpmn:outgoing>Flow_Monitoring_To_Anomaly</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Anomaly_Detection" name="이상점 감지">
+      <bpmn:incoming>Flow_Monitoring_To_Anomaly</bpmn:incoming>
+      <bpmn:outgoing>Flow_Anomaly_To_Conformity</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Defect_Conformity" name="불량 정합성 확인">
+      <bpmn:incoming>Flow_Anomaly_To_Conformity</bpmn:incoming>
+      <bpmn:outgoing>Flow_Conformity_To_Closed_Loop</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Closed_Loop" name="Closed Loop 구축">
+      <bpmn:incoming>Flow_Conformity_To_Closed_Loop</bpmn:incoming>
+      <bpmn:outgoing>Flow_Closed_Loop_To_End</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Process" name="종료">
+      <bpmn:incoming>Flow_Closed_Loop_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Start_To_Receipt" sourceRef="StartEvent_Process" targetRef="Task_Defect_Receipt" />
+    <bpmn:sequenceFlow id="Flow_Receipt_To_Product_Info" sourceRef="Task_Defect_Receipt" targetRef="Gateway_Product_Info" />
+    <bpmn:sequenceFlow id="Flow_Product_Info_To_Physical" name="Yes/No" sourceRef="Gateway_Product_Info" targetRef="Task_Physical_Analysis" />
+    <bpmn:sequenceFlow id="Flow_Product_Info_To_Process" name="Yes" sourceRef="Gateway_Product_Info" targetRef="Task_Process_Analysis" />
+    <bpmn:sequenceFlow id="Flow_Physical_To_Process" sourceRef="Task_Physical_Analysis" targetRef="Task_Process_Analysis" />
+    <bpmn:sequenceFlow id="Flow_Process_To_Data" sourceRef="Task_Process_Analysis" targetRef="Task_Data_Acquisition" />
+    <bpmn:sequenceFlow id="Flow_Data_To_Pipeline" sourceRef="Task_Data_Acquisition" targetRef="Task_Data_Pipeline" />
+    <bpmn:sequenceFlow id="Flow_Pipeline_To_DB" sourceRef="Task_Data_Pipeline" targetRef="Task_DB_Design" />
+    <bpmn:sequenceFlow id="Flow_DB_To_Feasibility" sourceRef="Task_DB_Design" targetRef="Task_AI_Feasibility" />
+    <bpmn:sequenceFlow id="Flow_Feasibility_To_Environment" sourceRef="Task_AI_Feasibility" targetRef="Task_Development_Environment" />
+    <bpmn:sequenceFlow id="Flow_Environment_To_Outlier" sourceRef="Task_Development_Environment" targetRef="Task_Outlier_Removal" />
+    <bpmn:sequenceFlow id="Flow_Environment_To_Label" sourceRef="Task_Development_Environment" targetRef="Task_Label_Generation" />
+    <bpmn:sequenceFlow id="Flow_Outlier_To_Data_Quality" sourceRef="Task_Outlier_Removal" targetRef="Gateway_Data_Quality" />
+    <bpmn:sequenceFlow id="Flow_Label_To_Data_Quality" sourceRef="Task_Label_Generation" targetRef="Gateway_Data_Quality" />
+    <bpmn:sequenceFlow id="Flow_Data_Quality_Rework" sourceRef="Gateway_Data_Quality" targetRef="Task_Development_Environment" />
+    <bpmn:sequenceFlow id="Flow_Data_Quality_To_Training" sourceRef="Gateway_Data_Quality" targetRef="Task_Training_Dataset" />
+    <bpmn:sequenceFlow id="Flow_Training_To_Model_Selection" sourceRef="Task_Training_Dataset" targetRef="Task_Model_Selection" />
+    <bpmn:sequenceFlow id="Flow_Model_Selection_To_Detect_Logic" sourceRef="Task_Model_Selection" targetRef="Task_Detect_Logic" />
+    <bpmn:sequenceFlow id="Flow_Detect_Logic_To_Architecture" sourceRef="Task_Detect_Logic" targetRef="Task_Model_Architecture" />
+    <bpmn:sequenceFlow id="Flow_Architecture_To_Training" sourceRef="Task_Model_Architecture" targetRef="Task_Model_Training" />
+    <bpmn:sequenceFlow id="Flow_Model_Training_To_Test_Environment" sourceRef="Task_Model_Training" targetRef="Task_Test_Environment" />
+    <bpmn:sequenceFlow id="Flow_Test_Environment_To_Function_Validation" sourceRef="Task_Test_Environment" targetRef="Gateway_Function_Validation" />
+    <bpmn:sequenceFlow id="Flow_Function_Validation_To_Code" sourceRef="Gateway_Function_Validation" targetRef="Task_Code_Improvement" />
+    <bpmn:sequenceFlow id="Flow_Code_To_Parameter" sourceRef="Task_Code_Improvement" targetRef="Task_Parameter_Optimization" />
+    <bpmn:sequenceFlow id="Flow_Parameter_To_Function_Validation" sourceRef="Task_Parameter_Optimization" targetRef="Gateway_Function_Validation" />
+    <bpmn:sequenceFlow id="Flow_Function_Validation_To_Monitoring" sourceRef="Gateway_Function_Validation" targetRef="Task_Monitoring" />
+    <bpmn:sequenceFlow id="Flow_Monitoring_To_Anomaly" sourceRef="Task_Monitoring" targetRef="Task_Anomaly_Detection" />
+    <bpmn:sequenceFlow id="Flow_Anomaly_To_Conformity" sourceRef="Task_Anomaly_Detection" targetRef="Task_Defect_Conformity" />
+    <bpmn:sequenceFlow id="Flow_Conformity_To_Closed_Loop" sourceRef="Task_Defect_Conformity" targetRef="Task_Closed_Loop" />
+    <bpmn:sequenceFlow id="Flow_Closed_Loop_To_End" sourceRef="Task_Closed_Loop" targetRef="EndEvent_Process" />
+  </bpmn:process>
+
+  <bpmn:collaboration id="Collaboration_Defect_AI_ClosedLoop">
+    <bpmn:participant id="Participant_Main"
+                      name="불량 분석·AI 이상감지 Closed Loop"
+                      processRef="Process_Defect_AI_ClosedLoop" />
+  </bpmn:collaboration>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Defect_AI_ClosedLoop">
+    <bpmndi:BPMNPlane id="BPMNPlane_Defect_AI_ClosedLoop" bpmnElement="Collaboration_Defect_AI_ClosedLoop">
+      <bpmndi:BPMNShape id="Participant_Main_di" bpmnElement="Participant_Main" isHorizontal="true">
+        <dc:Bounds x="80" y="80" width="2300" height="1210" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Lane_Defect_Definition_di" bpmnElement="Lane_Defect_Definition" isHorizontal="true">
+        <dc:Bounds x="110" y="80" width="2270" height="180" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Defect_Factor_Analysis_di" bpmnElement="Lane_Defect_Factor_Analysis" isHorizontal="true">
+        <dc:Bounds x="110" y="260" width="2270" height="180" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Production_Data_di" bpmnElement="Lane_Production_Data" isHorizontal="true">
+        <dc:Bounds x="110" y="440" width="2270" height="180" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_AI_Environment_Preprocessing_di" bpmnElement="Lane_AI_Environment_Preprocessing" isHorizontal="true">
+        <dc:Bounds x="110" y="620" width="2270" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_AI_Model_Development_di" bpmnElement="Lane_AI_Model_Development" isHorizontal="true">
+        <dc:Bounds x="110" y="880" width="2270" height="230" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Monitoring_Optimization_di" bpmnElement="Lane_Monitoring_Optimization" isHorizontal="true">
+        <dc:Bounds x="110" y="1110" width="2270" height="180" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Process_di" bpmnElement="StartEvent_Process">
+        <dc:Bounds x="220" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="219" y="192" width="38" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Defect_Receipt_di" bpmnElement="Task_Defect_Receipt">
+        <dc:Bounds x="300" y="130" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Product_Info_di" bpmnElement="Gateway_Product_Info" isMarkerVisible="false">
+        <dc:Bounds x="530" y="145" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="497" y="108" width="116" height="28" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Physical_Analysis_di" bpmnElement="Task_Physical_Analysis">
+        <dc:Bounds x="300" y="310" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Process_Analysis_di" bpmnElement="Task_Process_Analysis">
+        <dc:Bounds x="560" y="310" width="180" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Data_Acquisition_di" bpmnElement="Task_Data_Acquisition">
+        <dc:Bounds x="300" y="490" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Data_Pipeline_di" bpmnElement="Task_Data_Pipeline">
+        <dc:Bounds x="560" y="490" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DB_Design_di" bpmnElement="Task_DB_Design">
+        <dc:Bounds x="820" y="490" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_AI_Feasibility_di" bpmnElement="Task_AI_Feasibility">
+        <dc:Bounds x="300" y="710" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Development_Environment_di" bpmnElement="Task_Development_Environment">
+        <dc:Bounds x="560" y="710" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Outlier_Removal_di" bpmnElement="Task_Outlier_Removal">
+        <dc:Bounds x="820" y="650" width="170" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Label_Generation_di" bpmnElement="Task_Label_Generation">
+        <dc:Bounds x="820" y="790" width="170" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Data_Quality_di" bpmnElement="Gateway_Data_Quality" isMarkerVisible="false">
+        <dc:Bounds x="1070" y="725" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1040" y="794" width="120" height="24" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Training_Dataset_di" bpmnElement="Task_Training_Dataset">
+        <dc:Bounds x="1200" y="710" width="210" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Model_Selection_di" bpmnElement="Task_Model_Selection">
+        <dc:Bounds x="300" y="950" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Detect_Logic_di" bpmnElement="Task_Detect_Logic">
+        <dc:Bounds x="540" y="950" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Model_Architecture_di" bpmnElement="Task_Model_Architecture">
+        <dc:Bounds x="780" y="950" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Model_Training_di" bpmnElement="Task_Model_Training">
+        <dc:Bounds x="1040" y="950" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Test_Environment_di" bpmnElement="Task_Test_Environment">
+        <dc:Bounds x="1270" y="950" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Function_Validation_di" bpmnElement="Gateway_Function_Validation" isMarkerVisible="false">
+        <dc:Bounds x="1530" y="960" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1517" y="1028" width="86" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Code_Improvement_di" bpmnElement="Task_Code_Improvement">
+        <dc:Bounds x="1670" y="950" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Parameter_Optimization_di" bpmnElement="Task_Parameter_Optimization">
+        <dc:Bounds x="1910" y="950" width="180" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Monitoring_di" bpmnElement="Task_Monitoring">
+        <dc:Bounds x="300" y="1180" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Anomaly_Detection_di" bpmnElement="Task_Anomaly_Detection">
+        <dc:Bounds x="540" y="1180" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Defect_Conformity_di" bpmnElement="Task_Defect_Conformity">
+        <dc:Bounds x="780" y="1180" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Closed_Loop_di" bpmnElement="Task_Closed_Loop">
+        <dc:Bounds x="1030" y="1180" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Process_di" bpmnElement="EndEvent_Process">
+        <dc:Bounds x="1270" y="1202" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1269" y="1242" width="38" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_Start_To_Receipt_di" bpmnElement="Flow_Start_To_Receipt">
+        <di:waypoint x="256" y="170" />
+        <di:waypoint x="300" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Receipt_To_Product_Info_di" bpmnElement="Flow_Receipt_To_Product_Info">
+        <di:waypoint x="460" y="170" />
+        <di:waypoint x="530" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Product_Info_To_Physical_di" bpmnElement="Flow_Product_Info_To_Physical">
+        <di:waypoint x="555" y="195" />
+        <di:waypoint x="555" y="235" />
+        <di:waypoint x="385" y="235" />
+        <di:waypoint x="385" y="310" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="398" y="215" width="60" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Product_Info_To_Process_di" bpmnElement="Flow_Product_Info_To_Process">
+        <di:waypoint x="580" y="170" />
+        <di:waypoint x="650" y="170" />
+        <di:waypoint x="650" y="310" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="657" y="216" width="28" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Physical_To_Process_di" bpmnElement="Flow_Physical_To_Process">
+        <di:waypoint x="470" y="350" />
+        <di:waypoint x="560" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Process_To_Data_di" bpmnElement="Flow_Process_To_Data">
+        <di:waypoint x="650" y="390" />
+        <di:waypoint x="650" y="455" />
+        <di:waypoint x="385" y="455" />
+        <di:waypoint x="385" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Data_To_Pipeline_di" bpmnElement="Flow_Data_To_Pipeline">
+        <di:waypoint x="470" y="530" />
+        <di:waypoint x="560" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Pipeline_To_DB_di" bpmnElement="Flow_Pipeline_To_DB">
+        <di:waypoint x="730" y="530" />
+        <di:waypoint x="820" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DB_To_Feasibility_di" bpmnElement="Flow_DB_To_Feasibility">
+        <di:waypoint x="895" y="570" />
+        <di:waypoint x="895" y="600" />
+        <di:waypoint x="385" y="600" />
+        <di:waypoint x="385" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Feasibility_To_Environment_di" bpmnElement="Flow_Feasibility_To_Environment">
+        <di:waypoint x="470" y="750" />
+        <di:waypoint x="560" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Environment_To_Outlier_di" bpmnElement="Flow_Environment_To_Outlier">
+        <di:waypoint x="730" y="750" />
+        <di:waypoint x="775" y="750" />
+        <di:waypoint x="775" y="680" />
+        <di:waypoint x="820" y="680" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Environment_To_Label_di" bpmnElement="Flow_Environment_To_Label">
+        <di:waypoint x="730" y="750" />
+        <di:waypoint x="775" y="750" />
+        <di:waypoint x="775" y="820" />
+        <di:waypoint x="820" y="820" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Outlier_To_Data_Quality_di" bpmnElement="Flow_Outlier_To_Data_Quality">
+        <di:waypoint x="990" y="680" />
+        <di:waypoint x="1085" y="740" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Label_To_Data_Quality_di" bpmnElement="Flow_Label_To_Data_Quality">
+        <di:waypoint x="990" y="820" />
+        <di:waypoint x="1085" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Data_Quality_Rework_di" bpmnElement="Flow_Data_Quality_Rework">
+        <di:waypoint x="1100" y="725" />
+        <di:waypoint x="1100" y="635" />
+        <di:waypoint x="645" y="635" />
+        <di:waypoint x="645" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Data_Quality_To_Training_di" bpmnElement="Flow_Data_Quality_To_Training">
+        <di:waypoint x="1130" y="755" />
+        <di:waypoint x="1200" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Training_To_Model_Selection_di" bpmnElement="Flow_Training_To_Model_Selection">
+        <di:waypoint x="1305" y="790" />
+        <di:waypoint x="1305" y="860" />
+        <di:waypoint x="385" y="860" />
+        <di:waypoint x="385" y="950" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Model_Selection_To_Detect_Logic_di" bpmnElement="Flow_Model_Selection_To_Detect_Logic">
+        <di:waypoint x="470" y="990" />
+        <di:waypoint x="540" y="990" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Detect_Logic_To_Architecture_di" bpmnElement="Flow_Detect_Logic_To_Architecture">
+        <di:waypoint x="710" y="990" />
+        <di:waypoint x="780" y="990" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Architecture_To_Training_di" bpmnElement="Flow_Architecture_To_Training">
+        <di:waypoint x="970" y="990" />
+        <di:waypoint x="1040" y="990" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Model_Training_To_Test_Environment_di" bpmnElement="Flow_Model_Training_To_Test_Environment">
+        <di:waypoint x="1200" y="990" />
+        <di:waypoint x="1270" y="990" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Test_Environment_To_Function_Validation_di" bpmnElement="Flow_Test_Environment_To_Function_Validation">
+        <di:waypoint x="1460" y="990" />
+        <di:waypoint x="1530" y="990" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Function_Validation_To_Code_di" bpmnElement="Flow_Function_Validation_To_Code">
+        <di:waypoint x="1590" y="990" />
+        <di:waypoint x="1670" y="990" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Code_To_Parameter_di" bpmnElement="Flow_Code_To_Parameter">
+        <di:waypoint x="1840" y="990" />
+        <di:waypoint x="1910" y="990" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Parameter_To_Function_Validation_di" bpmnElement="Flow_Parameter_To_Function_Validation">
+        <di:waypoint x="2090" y="990" />
+        <di:waypoint x="2140" y="990" />
+        <di:waypoint x="2140" y="900" />
+        <di:waypoint x="1560" y="900" />
+        <di:waypoint x="1560" y="960" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Function_Validation_To_Monitoring_di" bpmnElement="Flow_Function_Validation_To_Monitoring">
+        <di:waypoint x="1560" y="1020" />
+        <di:waypoint x="1560" y="1090" />
+        <di:waypoint x="385" y="1090" />
+        <di:waypoint x="385" y="1180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Monitoring_To_Anomaly_di" bpmnElement="Flow_Monitoring_To_Anomaly">
+        <di:waypoint x="470" y="1220" />
+        <di:waypoint x="540" y="1220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Anomaly_To_Conformity_di" bpmnElement="Flow_Anomaly_To_Conformity">
+        <di:waypoint x="710" y="1220" />
+        <di:waypoint x="780" y="1220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Conformity_To_Closed_Loop_di" bpmnElement="Flow_Conformity_To_Closed_Loop">
+        <di:waypoint x="960" y="1220" />
+        <di:waypoint x="1030" y="1220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Closed_Loop_To_End_di" bpmnElement="Flow_Closed_Loop_To_End">
+        <di:waypoint x="1210" y="1220" />
+        <di:waypoint x="1270" y="1220" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

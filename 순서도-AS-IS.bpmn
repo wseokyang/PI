@@ -1,0 +1,1456 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0"
+                  id="Definitions_ASIS_Defect_AI_ClosedLoop"
+                  targetNamespace="https://example.com/bpmn/asis-defect-ai-closed-loop"
+                  exporter="OpenAI Codex"
+                  exporterVersion="1.0">
+  <bpmn:process id="Process_ASIS_Defect_AI_ClosedLoop" name="AS-IS 가설: 불량 분석 ~ Closed Loop 구축" isExecutable="false">
+    <bpmn:documentation>순서도.png의 파란색 TO-BE 개선 대상 15개를 역산한 AS-IS 가설 모델이다. 시간은 1회 수행의 작업시간과 대기시간을 합산한 대표 Lead Time 가정치이며 1일은 8 업무시간으로 환산한다. 실제 현행 인터뷰, 시스템 로그, 리드타임 및 재작업률 측정으로 검증해야 한다. [B]=Bottleneck, [D]=Delay, [W]=Waste. ECRSA는 Eliminate, Combine, Rearrange, Simplify, Automate를 의미한다.</bpmn:documentation>
+    <bpmn:laneSet id="LaneSet_ASIS_Main">
+      <bpmn:lane id="Lane_Defect_Definition" name="불량 분석 및 과제 정의">
+        <bpmn:flowNodeRef>StartEvent_Process</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Defect_Receipt</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_PIC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Product_Info</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Defect_Factor_Analysis" name="불량 협의 인자 분석">
+        <bpmn:flowNodeRef>Task_Physical_Analysis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Process_Analysis_Merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_PRA</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Production_Data" name="양산 데이터 확보">
+        <bpmn:flowNodeRef>Task_Data_Acquisition</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_DPL</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_DBD</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_AI_Environment_Preprocessing" name="AI 구축 환경 준비 데이터 전처리">
+        <bpmn:flowNodeRef>Task_AI_Feasibility</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Development_Environment_Merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_DEV</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Preprocessing_Fork</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_OUT</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_LBL</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Preprocessing_Join</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_DQC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Data_Quality</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_TDS</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_AI_Model_Development" name="AI 모델 설계 및 개발">
+        <bpmn:flowNodeRef>Task_Model_Selection</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_DLG</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_MDA</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_MTR</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Test_Environment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Function_Merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Function_Validation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_CIM</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Parameter_Optimization</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Monitoring_Optimization" name="모니터링 및 이상감지 최적화">
+        <bpmn:flowNodeRef>SubProcess_ASIS_MON</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_ASIS_ANO</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Defect_Conformity</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Closed_Loop</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Process</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_Process" name="시작">
+      <bpmn:outgoing>Flow_Start_To_Receipt</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Defect_Receipt" name="불량 현상 접수">
+      <bpmn:incoming>Flow_Start_To_Receipt</bpmn:incoming>
+      <bpmn:outgoing>Flow_Receipt_To_ASIS_PIC</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:subProcess id="SubProcess_ASIS_PIC" name="I01 제품 정보 확인 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I01: 제품 정보 확인. AS-IS 가설: 제품·Lot 정보가 시스템과 문서에 흩어져 있고, 누락 정보 회신을 기다리는 상태. 가정 Lead Time: 6h → 30분 (92% 단축). ECRSA: C/S/A. 개선안: 접수 항목을 표준화하고 PLM·MES 정보를 통합 조회해 재요청과 수기 대조를 축소.</bpmn:documentation>
+      <bpmn:incoming>Flow_Receipt_To_ASIS_PIC</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_PIC_To_Product_Info</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_PIC">
+        <bpmn:outgoing>Flow_ASIS_PIC_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_PIC_01" name="메일·전화로 제품/Lot 정보 요청 [D] · 3h">
+        <bpmn:documentation>PI 이슈: Delay. 가정 Lead Time: 3h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_PIC_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_PIC_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_PIC_02" name="PLM·MES·문서별 정보 개별 조회 [B/W] · 1h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Waste. 가정 Lead Time: 1h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_PIC_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_PIC_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_PIC_03" name="누락 정보 재요청·수기 대조 [B/D/W] · 2h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay, Waste. 가정 Lead Time: 2h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_PIC_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_PIC_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_PIC">
+        <bpmn:incoming>Flow_ASIS_PIC_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_PIC_01" sourceRef="Start_ASIS_PIC" targetRef="Task_ASIS_PIC_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_PIC_02" sourceRef="Task_ASIS_PIC_01" targetRef="Task_ASIS_PIC_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_PIC_03" sourceRef="Task_ASIS_PIC_02" targetRef="Task_ASIS_PIC_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_PIC_04" sourceRef="Task_ASIS_PIC_03" targetRef="End_ASIS_PIC" />
+    </bpmn:subProcess>
+    <bpmn:exclusiveGateway id="Gateway_Product_Info" name="제품 정보 확인 결과" gatewayDirection="Diverging">
+      <bpmn:documentation>AS-IS 확인 작업 뒤 정보 충분 여부를 판단한다. TO-BE 원본의 Yes/No 표기는 논리적 의미가 모호하여 정보 충분/추가 분석 필요로 해석했다.</bpmn:documentation>
+      <bpmn:incoming>Flow_ASIS_PIC_To_Product_Info</bpmn:incoming>
+      <bpmn:outgoing>Flow_Product_Info_To_Physical</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Product_Info_To_Process_Merge</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Physical_Analysis" name="실물 분석 (eFA, pFA)">
+      <bpmn:incoming>Flow_Product_Info_To_Physical</bpmn:incoming>
+      <bpmn:outgoing>Flow_Physical_To_Process_Merge</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Process_Analysis_Merge" name="공정 분석 진입 합류" gatewayDirection="Converging">
+      <bpmn:incoming>Flow_Product_Info_To_Process_Merge</bpmn:incoming>
+      <bpmn:incoming>Flow_Physical_To_Process_Merge</bpmn:incoming>
+      <bpmn:outgoing>Flow_Process_Merge_To_ASIS_PRA</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:subProcess id="SubProcess_ASIS_PRA" name="I02 공정 분석 (Commonality) AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I02: 공정 분석 (Commonality). AS-IS 가설: 데이터 추출·결합과 공통성 판단이 소수 분석자와 Excel 작업에 집중된 상태. 가정 Lead Time: 24h → 8h (67% 단축). ECRSA: C/S/A. 개선안: 공통 Key와 분석 Template을 표준화하고 Commonality 집계·비교를 자동화.</bpmn:documentation>
+      <bpmn:incoming>Flow_Process_Merge_To_ASIS_PRA</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_PRA_To_Data</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_PRA">
+        <bpmn:outgoing>Flow_ASIS_PRA_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_PRA_01" name="공정·설비별 자료 추출 요청 [D] · 8h">
+        <bpmn:documentation>PI 이슈: Delay. 가정 Lead Time: 8h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_PRA_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_PRA_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_PRA_02" name="담당자별 Excel 수기 취합 [B/W] · 8h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Waste. 가정 Lead Time: 8h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_PRA_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_PRA_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_PRA_03" name="Excel 공통조건 비교 [B/W] · 8h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Waste. 가정 Lead Time: 8h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_PRA_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_PRA_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_PRA">
+        <bpmn:incoming>Flow_ASIS_PRA_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_PRA_01" sourceRef="Start_ASIS_PRA" targetRef="Task_ASIS_PRA_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_PRA_02" sourceRef="Task_ASIS_PRA_01" targetRef="Task_ASIS_PRA_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_PRA_03" sourceRef="Task_ASIS_PRA_02" targetRef="Task_ASIS_PRA_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_PRA_04" sourceRef="Task_ASIS_PRA_03" targetRef="End_ASIS_PRA" />
+    </bpmn:subProcess>
+    <bpmn:task id="Task_Data_Acquisition" name="Data 확보 및 검증">
+      <bpmn:incoming>Flow_ASIS_PRA_To_Data</bpmn:incoming>
+      <bpmn:outgoing>Flow_Data_To_ASIS_DPL</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:subProcess id="SubProcess_ASIS_DPL" name="I03 Data Pipeline 설계 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I03: Data Pipeline 설계. AS-IS 가설: 자동 연계 없이 요청·파일 전달·수동 변환 주기로 데이터를 모으는 상태. 가정 Lead Time: 32h → 12h (63% 단축). ECRSA: E/C/R/A. 개선안: 추출 요청·메일 전달을 제거하고 수집을 앞단으로 재배열해 소스 결합·형식 변환을 자동화.</bpmn:documentation>
+      <bpmn:incoming>Flow_Data_To_ASIS_DPL</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_DPL_To_ASIS_DBD</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_DPL">
+        <bpmn:outgoing>Flow_ASIS_DPL_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_DPL_01" name="시스템별 CSV 개별 추출 요청 [B/D] · 16h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay. 가정 Lead Time: 16h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DPL_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DPL_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_DPL_02" name="이메일·공유폴더로 파일 전달 [D/W] · 4h">
+        <bpmn:documentation>PI 이슈: Delay, Waste. 가정 Lead Time: 4h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DPL_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DPL_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_DPL_03" name="포맷 수동 변환·병합 [B/W] · 12h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Waste. 가정 Lead Time: 12h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DPL_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DPL_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_DPL">
+        <bpmn:incoming>Flow_ASIS_DPL_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_DPL_01" sourceRef="Start_ASIS_DPL" targetRef="Task_ASIS_DPL_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DPL_02" sourceRef="Task_ASIS_DPL_01" targetRef="Task_ASIS_DPL_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DPL_03" sourceRef="Task_ASIS_DPL_02" targetRef="Task_ASIS_DPL_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DPL_04" sourceRef="Task_ASIS_DPL_03" targetRef="End_ASIS_DPL" />
+    </bpmn:subProcess>
+    <bpmn:subProcess id="SubProcess_ASIS_DBD" name="I04 DB 설계 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I04: DB 설계. AS-IS 가설: 표준 스키마와 버전 관리 없이 개인·부서별 파일을 반복 가공하는 상태. 가정 Lead Time: 24h → 8h (67% 단축). ECRSA: C/S/A. 개선안: 분산 파일을 중앙 DB로 결합하고 스키마·Key·단위를 표준화.</bpmn:documentation>
+      <bpmn:incoming>Flow_ASIS_DPL_To_ASIS_DBD</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_DBD_To_Feasibility</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_DBD">
+        <bpmn:outgoing>Flow_ASIS_DBD_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_DBD_01" name="개인 PC·부서 폴더별 저장 [W] · 2h">
+        <bpmn:documentation>PI 이슈: Waste. 가정 Lead Time: 2h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DBD_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DBD_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_DBD_02" name="컬럼·키·단위를 개별 정의 [B/W] · 12h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Waste. 가정 Lead Time: 12h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DBD_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DBD_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_DBD_03" name="버전 확인·수동 Join·중복 제거 [D/W] · 10h">
+        <bpmn:documentation>PI 이슈: Delay, Waste. 가정 Lead Time: 10h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DBD_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DBD_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_DBD">
+        <bpmn:incoming>Flow_ASIS_DBD_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_DBD_01" sourceRef="Start_ASIS_DBD" targetRef="Task_ASIS_DBD_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DBD_02" sourceRef="Task_ASIS_DBD_01" targetRef="Task_ASIS_DBD_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DBD_03" sourceRef="Task_ASIS_DBD_02" targetRef="Task_ASIS_DBD_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DBD_04" sourceRef="Task_ASIS_DBD_03" targetRef="End_ASIS_DBD" />
+    </bpmn:subProcess>
+    <bpmn:task id="Task_AI_Feasibility" name="AI 적용 타당성 검토">
+      <bpmn:incoming>Flow_ASIS_DBD_To_Feasibility</bpmn:incoming>
+      <bpmn:outgoing>Flow_Feasibility_To_Environment_Merge</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Development_Environment_Merge" name="환경 설정 진입 합류" gatewayDirection="Converging">
+      <bpmn:incoming>Flow_Feasibility_To_Environment_Merge</bpmn:incoming>
+      <bpmn:incoming>Flow_Data_Quality_Rework</bpmn:incoming>
+      <bpmn:outgoing>Flow_Environment_Merge_To_ASIS_DEV</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:subProcess id="SubProcess_ASIS_DEV" name="I05 개발 환경 및 도구 설정 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I05: 개발 환경 및 도구 설정. AS-IS 가설: 개인 PC마다 환경이 달라 설치·공유·재현 문제가 반복되는 상태. 가정 Lead Time: 8h → 30분 (94% 단축). ECRSA: E/S/A. 개선안: 개인별 설치와 이메일 코드 공유를 제거하고 서버·code-server 환경을 표준 제공.</bpmn:documentation>
+      <bpmn:incoming>Flow_Environment_Merge_To_ASIS_DEV</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_DEV_To_Preprocess_Fork</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_DEV">
+        <bpmn:outgoing>Flow_ASIS_DEV_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_DEV_01" name="개인 PC에 Python·패키지 설치 [D/W] · 3h">
+        <bpmn:documentation>PI 이슈: Delay, Waste. 가정 Lead Time: 3h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DEV_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DEV_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_DEV_02" name="이메일·공유폴더로 파일·코드 공유 [D/W] · 1h">
+        <bpmn:documentation>PI 이슈: Delay, Waste. 가정 Lead Time: 1h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DEV_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DEV_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_DEV_03" name="버전 충돌 해결·재설치 [B/D/W] · 4h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay, Waste. 가정 Lead Time: 4h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DEV_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DEV_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_DEV">
+        <bpmn:incoming>Flow_ASIS_DEV_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_DEV_01" sourceRef="Start_ASIS_DEV" targetRef="Task_ASIS_DEV_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DEV_02" sourceRef="Task_ASIS_DEV_01" targetRef="Task_ASIS_DEV_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DEV_03" sourceRef="Task_ASIS_DEV_02" targetRef="Task_ASIS_DEV_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DEV_04" sourceRef="Task_ASIS_DEV_03" targetRef="End_ASIS_DEV" />
+    </bpmn:subProcess>
+    <bpmn:parallelGateway id="Gateway_Preprocessing_Fork" name="전처리 병렬 분기" gatewayDirection="Diverging">
+      <bpmn:incoming>Flow_ASIS_DEV_To_Preprocess_Fork</bpmn:incoming>
+      <bpmn:outgoing>Flow_Preprocess_Fork_To_ASIS_OUT</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Preprocess_Fork_To_ASIS_LBL</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:subProcess id="SubProcess_ASIS_OUT" name="I06 이상치 제거 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I06: 이상치 제거. AS-IS 가설: 공통 기준과 처리 이력 없이 분석자 경험에 따라 정제를 반복하는 상태. 가정 Lead Time: 12h → 3h (75% 단축). ECRSA: E/S/A. 개선안: 반복 수작업 정제를 제거하고 이상치 기준을 규칙화해 재사용 가능한 Pipeline으로 자동 적용.</bpmn:documentation>
+      <bpmn:incoming>Flow_Preprocess_Fork_To_ASIS_OUT</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_OUT_To_Preprocess_Join</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_OUT">
+        <bpmn:outgoing>Flow_ASIS_OUT_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_OUT_01" name="담당자 경험으로 이상치 기준 정의 [B] · 3h">
+        <bpmn:documentation>PI 이슈: Bottleneck. 가정 Lead Time: 3h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_OUT_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_OUT_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_OUT_02" name="Excel·로컬 스크립트 수작업 제거 [W] · 5h">
+        <bpmn:documentation>PI 이슈: Waste. 가정 Lead Time: 5h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_OUT_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_OUT_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_OUT_03" name="기준 차이로 반복 정제 [D/W] · 4h">
+        <bpmn:documentation>PI 이슈: Delay, Waste. 가정 Lead Time: 4h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_OUT_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_OUT_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_OUT">
+        <bpmn:incoming>Flow_ASIS_OUT_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_OUT_01" sourceRef="Start_ASIS_OUT" targetRef="Task_ASIS_OUT_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_OUT_02" sourceRef="Task_ASIS_OUT_01" targetRef="Task_ASIS_OUT_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_OUT_03" sourceRef="Task_ASIS_OUT_02" targetRef="Task_ASIS_OUT_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_OUT_04" sourceRef="Task_ASIS_OUT_03" targetRef="End_ASIS_OUT" />
+    </bpmn:subProcess>
+    <bpmn:subProcess id="SubProcess_ASIS_LBL" name="I07 Label 생성 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I07: Label 생성. AS-IS 가설: 도메인 전문가 회신과 Excel 수기 입력에 라벨 품질과 일정이 종속된 상태. 가정 Lead Time: 40h → 16h (60% 단축). ECRSA: C/S/A. 개선안: 판정 정보와 원천 데이터를 연결하고 Label 체계·도구를 표준화해 보조 자동화.</bpmn:documentation>
+      <bpmn:incoming>Flow_Preprocess_Fork_To_ASIS_LBL</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_LBL_To_Preprocess_Join</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_LBL">
+        <bpmn:outgoing>Flow_ASIS_LBL_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_LBL_01" name="전문가에게 판정표·샘플 요청 [B/D] · 16h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay. 가정 Lead Time: 16h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_LBL_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_LBL_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_LBL_02" name="Excel 행 단위 Label 수기 입력 [B/W] · 16h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Waste. 가정 Lead Time: 16h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_LBL_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_LBL_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_LBL_03" name="불일치 협의·재라벨링 [B/D/W] · 8h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay, Waste. 가정 Lead Time: 8h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_LBL_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_LBL_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_LBL">
+        <bpmn:incoming>Flow_ASIS_LBL_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_LBL_01" sourceRef="Start_ASIS_LBL" targetRef="Task_ASIS_LBL_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_LBL_02" sourceRef="Task_ASIS_LBL_01" targetRef="Task_ASIS_LBL_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_LBL_03" sourceRef="Task_ASIS_LBL_02" targetRef="Task_ASIS_LBL_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_LBL_04" sourceRef="Task_ASIS_LBL_03" targetRef="End_ASIS_LBL" />
+    </bpmn:subProcess>
+    <bpmn:parallelGateway id="Gateway_Preprocessing_Join" name="전처리 병렬 합류" gatewayDirection="Converging">
+      <bpmn:incoming>Flow_ASIS_OUT_To_Preprocess_Join</bpmn:incoming>
+      <bpmn:incoming>Flow_ASIS_LBL_To_Preprocess_Join</bpmn:incoming>
+      <bpmn:outgoing>Flow_Preprocess_Join_To_ASIS_DQC</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:subProcess id="SubProcess_ASIS_DQC" name="I08 Data 품질확인 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I08: Data 품질확인. AS-IS 가설: 검증 규칙과 자동 리포트가 없어 표본 점검과 재추출 요청을 반복하는 상태. 가정 Lead Time: 12h → 2h (83% 단축). ECRSA: E/S/A. 개선안: 표본 점검과 수기 보고를 제거하고 품질 규칙 검사·리포트를 자동화.</bpmn:documentation>
+      <bpmn:incoming>Flow_Preprocess_Join_To_ASIS_DQC</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_DQC_To_Data_Quality</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_DQC">
+        <bpmn:outgoing>Flow_ASIS_DQC_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_DQC_01" name="건수·Null·중복 표본 점검 [B/W] · 4h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Waste. 가정 Lead Time: 4h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DQC_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DQC_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_DQC_02" name="오류 원인 확인·재추출 요청 [B/D] · 6h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay. 가정 Lead Time: 6h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DQC_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DQC_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_DQC_03" name="검증 결과 Excel 보고서 작성 [D/W] · 2h">
+        <bpmn:documentation>PI 이슈: Delay, Waste. 가정 Lead Time: 2h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DQC_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DQC_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_DQC">
+        <bpmn:incoming>Flow_ASIS_DQC_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_DQC_01" sourceRef="Start_ASIS_DQC" targetRef="Task_ASIS_DQC_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DQC_02" sourceRef="Task_ASIS_DQC_01" targetRef="Task_ASIS_DQC_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DQC_03" sourceRef="Task_ASIS_DQC_02" targetRef="Task_ASIS_DQC_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DQC_04" sourceRef="Task_ASIS_DQC_03" targetRef="End_ASIS_DQC" />
+    </bpmn:subProcess>
+    <bpmn:exclusiveGateway id="Gateway_Data_Quality" name="품질 기준 충족?" gatewayDirection="Diverging">
+      <bpmn:documentation>적합이면 학습 데이터셋 구축으로 진행하고, 미달이면 개발 환경 및 도구 설정 단계부터 재작업한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_ASIS_DQC_To_Data_Quality</bpmn:incoming>
+      <bpmn:outgoing>Flow_Data_Quality_Rework</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Data_Quality_To_ASIS_TDS</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:subProcess id="SubProcess_ASIS_TDS" name="I09 AI Training Data Set 구축 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I09: AI Training Data Set 구축. AS-IS 가설: 분산 파일을 수동 매칭·복사하고 파일명으로 버전을 구분하는 상태. 가정 Lead Time: 8h → 1h (88% 단축). ECRSA: E/C/A. 개선안: 최신 파일 탐색·복사를 제거하고 정제·Label 데이터를 결합해 Dataset 분할·버전을 자동 생성.</bpmn:documentation>
+      <bpmn:incoming>Flow_Data_Quality_To_ASIS_TDS</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_TDS_To_Model_Selection</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_TDS">
+        <bpmn:outgoing>Flow_ASIS_TDS_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_TDS_01" name="최신 정제·Label 파일 탐색 [B/D] · 2h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay. 가정 Lead Time: 2h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_TDS_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_TDS_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_TDS_02" name="파일 수동 매칭·병합 [B/W] · 3h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Waste. 가정 Lead Time: 3h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_TDS_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_TDS_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_TDS_03" name="Train/Valid/Test 수동 분할·버전관리 [B/D/W] · 3h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay, Waste. 가정 Lead Time: 3h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_TDS_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_TDS_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_TDS">
+        <bpmn:incoming>Flow_ASIS_TDS_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_TDS_01" sourceRef="Start_ASIS_TDS" targetRef="Task_ASIS_TDS_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_TDS_02" sourceRef="Task_ASIS_TDS_01" targetRef="Task_ASIS_TDS_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_TDS_03" sourceRef="Task_ASIS_TDS_02" targetRef="Task_ASIS_TDS_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_TDS_04" sourceRef="Task_ASIS_TDS_03" targetRef="End_ASIS_TDS" />
+    </bpmn:subProcess>
+    <bpmn:task id="Task_Model_Selection" name="이상 감지 모델 선정">
+      <bpmn:incoming>Flow_ASIS_TDS_To_Model_Selection</bpmn:incoming>
+      <bpmn:outgoing>Flow_Model_Selection_To_ASIS_DLG</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:subProcess id="SubProcess_ASIS_DLG" name="I10 Detect logic 설계 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I10: Detect logic 설계. AS-IS 가설: 숙련자의 암묵지와 수작업 threshold 조정에 탐지 로직이 의존하는 상태. 가정 Lead Time: 24h → 8h (67% 단축). ECRSA: C/S/A. 개선안: 전문가 규칙을 설정형 Logic으로 결합·단순화하고 과거 Data 검증을 자동화.</bpmn:documentation>
+      <bpmn:incoming>Flow_Model_Selection_To_ASIS_DLG</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_DLG_To_ASIS_MDA</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_DLG">
+        <bpmn:outgoing>Flow_ASIS_DLG_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_DLG_01" name="숙련자 판정 규칙 인터뷰 [B/D] · 8h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay. 가정 Lead Time: 8h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DLG_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DLG_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_DLG_02" name="Threshold·조건문 하드코딩 [B/W] · 8h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Waste. 가정 Lead Time: 8h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DLG_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DLG_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_DLG_03" name="과거 로그 대조·회의 수정 [B/D/W] · 8h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay, Waste. 가정 Lead Time: 8h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_DLG_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_DLG_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_DLG">
+        <bpmn:incoming>Flow_ASIS_DLG_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_DLG_01" sourceRef="Start_ASIS_DLG" targetRef="Task_ASIS_DLG_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DLG_02" sourceRef="Task_ASIS_DLG_01" targetRef="Task_ASIS_DLG_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DLG_03" sourceRef="Task_ASIS_DLG_02" targetRef="Task_ASIS_DLG_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_DLG_04" sourceRef="Task_ASIS_DLG_03" targetRef="End_ASIS_DLG" />
+    </bpmn:subProcess>
+    <bpmn:subProcess id="SubProcess_ASIS_MDA" name="I11 모델 구조 설계 및 구현 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I11: 모델 구조 설계 및 구현. AS-IS 가설: 공통 모듈과 협업 저장소 없이 예제 코드 복사와 중복 구현이 발생하는 상태. 가정 Lead Time: 80h → 40h (50% 단축). ECRSA: E/C/S. 개선안: 중복 Prototype을 제거하고 공통 Module·Repository·Interface로 결합·표준화.</bpmn:documentation>
+      <bpmn:incoming>Flow_ASIS_DLG_To_ASIS_MDA</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_MDA_To_ASIS_MTR</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_MDA">
+        <bpmn:outgoing>Flow_ASIS_MDA_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_MDA_01" name="개인별 예제·Notebook 탐색 [W] · 8h">
+        <bpmn:documentation>PI 이슈: Waste. 가정 Lead Time: 8h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_MDA_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_MDA_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_MDA_02" name="과거 코드 복사·개별 구현 [B/W] · 48h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Waste. 가정 Lead Time: 48h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_MDA_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_MDA_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_MDA_03" name="수동 통합·충돌 수정 [B/D/W] · 24h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay, Waste. 가정 Lead Time: 24h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_MDA_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_MDA_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_MDA">
+        <bpmn:incoming>Flow_ASIS_MDA_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_MDA_01" sourceRef="Start_ASIS_MDA" targetRef="Task_ASIS_MDA_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_MDA_02" sourceRef="Task_ASIS_MDA_01" targetRef="Task_ASIS_MDA_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_MDA_03" sourceRef="Task_ASIS_MDA_02" targetRef="Task_ASIS_MDA_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_MDA_04" sourceRef="Task_ASIS_MDA_03" targetRef="End_ASIS_MDA" />
+    </bpmn:subProcess>
+    <bpmn:subProcess id="SubProcess_ASIS_MTR" name="I12 모델 학습 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I12: 모델 학습. AS-IS 가설: 제한된 연산 자원과 수동 실험 기록 때문에 대기와 재학습이 반복되는 상태. 가정 Lead Time: 40h → 16h (60% 단축). ECRSA: E/R/A. 개선안: 불필요한 전체 재학습을 제거하고 실험을 재배열·병렬화해 학습 Pipeline·실험 추적을 자동화.</bpmn:documentation>
+      <bpmn:incoming>Flow_ASIS_MDA_To_ASIS_MTR</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_MTR_To_Test_Environment</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_MTR">
+        <bpmn:outgoing>Flow_ASIS_MTR_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_MTR_01" name="GPU PC/서버 사용 순서 대기 [B/D] · 12h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay. 가정 Lead Time: 12h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_MTR_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_MTR_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_MTR_02" name="실험 순차 실행·Excel 기록 [B/D/W] · 20h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay, Waste. 가정 Lead Time: 20h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_MTR_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_MTR_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_MTR_03" name="실패·버전 차이로 전체 재학습 [D/W] · 8h">
+        <bpmn:documentation>PI 이슈: Delay, Waste. 가정 Lead Time: 8h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_MTR_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_MTR_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_MTR">
+        <bpmn:incoming>Flow_ASIS_MTR_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_MTR_01" sourceRef="Start_ASIS_MTR" targetRef="Task_ASIS_MTR_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_MTR_02" sourceRef="Task_ASIS_MTR_01" targetRef="Task_ASIS_MTR_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_MTR_03" sourceRef="Task_ASIS_MTR_02" targetRef="Task_ASIS_MTR_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_MTR_04" sourceRef="Task_ASIS_MTR_03" targetRef="End_ASIS_MTR" />
+    </bpmn:subProcess>
+    <bpmn:task id="Task_Test_Environment" name="테스트 환경 및 도구 구성">
+      <bpmn:incoming>Flow_ASIS_MTR_To_Test_Environment</bpmn:incoming>
+      <bpmn:outgoing>Flow_Test_Environment_To_Function_Merge</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Function_Merge" name="기능검증 진입 합류" gatewayDirection="Converging">
+      <bpmn:incoming>Flow_Test_Environment_To_Function_Merge</bpmn:incoming>
+      <bpmn:incoming>Flow_Parameter_To_Function_Merge</bpmn:incoming>
+      <bpmn:outgoing>Flow_Function_Merge_To_Validation</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_Function_Validation" name="기능검증" gatewayDirection="Diverging">
+      <bpmn:documentation>개선 필요 시 코드 개선과 Parameter 최적화 뒤 재검증하고, 검증 완료 시 모니터링으로 진행한다.</bpmn:documentation>
+      <bpmn:incoming>Flow_Function_Merge_To_Validation</bpmn:incoming>
+      <bpmn:outgoing>Flow_Function_To_ASIS_CIM</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Function_To_ASIS_MON</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:subProcess id="SubProcess_ASIS_CIM" name="I13 코드 개선 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I13: 코드 개선. AS-IS 가설: 결함 추적·형상관리·자동 회귀검증 없이 파일 단위 수정과 병합을 반복하는 상태. 가정 Lead Time: 16h → 4h (75% 단축). ECRSA: E/C/A. 개선안: 메일 사본과 수동 병합을 제거하고 Git·Issue·자동 회귀검증으로 통합.</bpmn:documentation>
+      <bpmn:incoming>Flow_Function_To_ASIS_CIM</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_CIM_To_Parameter</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_CIM">
+        <bpmn:outgoing>Flow_ASIS_CIM_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_CIM_01" name="테스트 실패 캡처·메일 전달 [D/W] · 2h">
+        <bpmn:documentation>PI 이슈: Delay, Waste. 가정 Lead Time: 2h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_CIM_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_CIM_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_CIM_02" name="개인 코드 사본 수정 [B/D] · 8h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay. 가정 Lead Time: 8h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_CIM_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_CIM_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_CIM_03" name="수정본 수동 병합·재검증 [B/D/W] · 6h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay, Waste. 가정 Lead Time: 6h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_CIM_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_CIM_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_CIM">
+        <bpmn:incoming>Flow_ASIS_CIM_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_CIM_01" sourceRef="Start_ASIS_CIM" targetRef="Task_ASIS_CIM_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_CIM_02" sourceRef="Task_ASIS_CIM_01" targetRef="Task_ASIS_CIM_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_CIM_03" sourceRef="Task_ASIS_CIM_02" targetRef="Task_ASIS_CIM_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_CIM_04" sourceRef="Task_ASIS_CIM_03" targetRef="End_ASIS_CIM" />
+    </bpmn:subProcess>
+    <bpmn:task id="Task_Parameter_Optimization" name="Parameter 최적화">
+      <bpmn:incoming>Flow_ASIS_CIM_To_Parameter</bpmn:incoming>
+      <bpmn:outgoing>Flow_Parameter_To_Function_Merge</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:subProcess id="SubProcess_ASIS_MON" name="I14 모니터링 실행 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I14: 모니터링 실행. AS-IS 가설: 실시간 연계 없이 담당자의 수동 실행 주기와 가용성에 모니터링이 종속된 상태. 가정 Lead Time: 4h → 15분 (94% 단축). ECRSA: E/R/A. 개선안: 수동 Export·실행을 제거하고 주기 작업을 상시 Monitoring·자동 알림으로 재배열.</bpmn:documentation>
+      <bpmn:incoming>Flow_Function_To_ASIS_MON</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_MON_To_ASIS_ANO</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_MON">
+        <bpmn:outgoing>Flow_ASIS_MON_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_MON_01" name="운영자가 주기별 수동 Export [B/D/W] · 1h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay, Waste. 가정 Lead Time: 1h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_MON_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_MON_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_MON_02" name="Batch/Notebook 수동 실행 [B/D] · 2h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay. 가정 Lead Time: 2h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_MON_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_MON_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_MON_03" name="결과 Excel 취합·메일 공유 [D/W] · 1h">
+        <bpmn:documentation>PI 이슈: Delay, Waste. 가정 Lead Time: 1h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_MON_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_MON_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_MON">
+        <bpmn:incoming>Flow_ASIS_MON_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_MON_01" sourceRef="Start_ASIS_MON" targetRef="Task_ASIS_MON_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_MON_02" sourceRef="Task_ASIS_MON_01" targetRef="Task_ASIS_MON_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_MON_03" sourceRef="Task_ASIS_MON_02" targetRef="Task_ASIS_MON_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_MON_04" sourceRef="Task_ASIS_MON_03" targetRef="End_ASIS_MON" />
+    </bpmn:subProcess>
+    <bpmn:subProcess id="SubProcess_ASIS_ANO" name="I15 이상점 감지 AS-IS">
+      <bpmn:documentation>TO-BE 개선 대상 I15: 이상점 감지. AS-IS 가설: 고정 기준·육안 판독과 담당자 확인 대기로 탐지에서 조치까지 지연되는 상태. 가정 Lead Time: 2h → 5분 (96% 단축). ECRSA: E/C/S/A. 개선안: 육안 재확인·QMS 재입력을 제거하고 탐지 결과와 공정 이력을 결합해 기준·알림을 표준 자동화.</bpmn:documentation>
+      <bpmn:incoming>Flow_ASIS_MON_To_ASIS_ANO</bpmn:incoming>
+      <bpmn:outgoing>Flow_ASIS_ANO_To_Conformity</bpmn:outgoing>
+      <bpmn:startEvent id="Start_ASIS_ANO">
+        <bpmn:outgoing>Flow_ASIS_ANO_01</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Task_ASIS_ANO_01" name="Chart·관리한계 육안 확인 [B/W] · 30분">
+        <bpmn:documentation>PI 이슈: Bottleneck, Waste. 가정 Lead Time: 30분. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_ANO_01</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_ANO_02</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_ANO_02" name="공정 담당자에게 전화·메일 확인 [B/D] · 1.25h">
+        <bpmn:documentation>PI 이슈: Bottleneck, Delay. 가정 Lead Time: 1.25h. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_ANO_02</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_ANO_03</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Task_ASIS_ANO_03" name="이상 목록 Excel/QMS 재등록 [D/W] · 15분">
+        <bpmn:documentation>PI 이슈: Delay, Waste. 가정 Lead Time: 15분. 현장 확인 전 AS-IS 가설 단계.</bpmn:documentation>
+        <bpmn:incoming>Flow_ASIS_ANO_03</bpmn:incoming>
+        <bpmn:outgoing>Flow_ASIS_ANO_04</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:endEvent id="End_ASIS_ANO">
+        <bpmn:incoming>Flow_ASIS_ANO_04</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_ASIS_ANO_01" sourceRef="Start_ASIS_ANO" targetRef="Task_ASIS_ANO_01" />
+      <bpmn:sequenceFlow id="Flow_ASIS_ANO_02" sourceRef="Task_ASIS_ANO_01" targetRef="Task_ASIS_ANO_02" />
+      <bpmn:sequenceFlow id="Flow_ASIS_ANO_03" sourceRef="Task_ASIS_ANO_02" targetRef="Task_ASIS_ANO_03" />
+      <bpmn:sequenceFlow id="Flow_ASIS_ANO_04" sourceRef="Task_ASIS_ANO_03" targetRef="End_ASIS_ANO" />
+    </bpmn:subProcess>
+    <bpmn:task id="Task_Defect_Conformity" name="불량 정합성 확인">
+      <bpmn:incoming>Flow_ASIS_ANO_To_Conformity</bpmn:incoming>
+      <bpmn:outgoing>Flow_Conformity_To_Closed_Loop</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Closed_Loop" name="Closed Loop 구축">
+      <bpmn:incoming>Flow_Conformity_To_Closed_Loop</bpmn:incoming>
+      <bpmn:outgoing>Flow_Closed_Loop_To_End</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Process" name="종료">
+      <bpmn:incoming>Flow_Closed_Loop_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Receipt" sourceRef="StartEvent_Process" targetRef="Task_Defect_Receipt" />
+    <bpmn:sequenceFlow id="Flow_Receipt_To_ASIS_PIC" sourceRef="Task_Defect_Receipt" targetRef="SubProcess_ASIS_PIC" />
+    <bpmn:sequenceFlow id="Flow_ASIS_PIC_To_Product_Info" sourceRef="SubProcess_ASIS_PIC" targetRef="Gateway_Product_Info" />
+    <bpmn:sequenceFlow id="Flow_Product_Info_To_Physical" name="추가 분석 필요" sourceRef="Gateway_Product_Info" targetRef="Task_Physical_Analysis" />
+    <bpmn:sequenceFlow id="Flow_Product_Info_To_Process_Merge" name="정보 충분" sourceRef="Gateway_Product_Info" targetRef="Gateway_Process_Analysis_Merge" />
+    <bpmn:sequenceFlow id="Flow_Physical_To_Process_Merge" sourceRef="Task_Physical_Analysis" targetRef="Gateway_Process_Analysis_Merge" />
+    <bpmn:sequenceFlow id="Flow_Process_Merge_To_ASIS_PRA" sourceRef="Gateway_Process_Analysis_Merge" targetRef="SubProcess_ASIS_PRA" />
+    <bpmn:sequenceFlow id="Flow_ASIS_PRA_To_Data" sourceRef="SubProcess_ASIS_PRA" targetRef="Task_Data_Acquisition" />
+    <bpmn:sequenceFlow id="Flow_Data_To_ASIS_DPL" sourceRef="Task_Data_Acquisition" targetRef="SubProcess_ASIS_DPL" />
+    <bpmn:sequenceFlow id="Flow_ASIS_DPL_To_ASIS_DBD" sourceRef="SubProcess_ASIS_DPL" targetRef="SubProcess_ASIS_DBD" />
+    <bpmn:sequenceFlow id="Flow_ASIS_DBD_To_Feasibility" sourceRef="SubProcess_ASIS_DBD" targetRef="Task_AI_Feasibility" />
+    <bpmn:sequenceFlow id="Flow_Feasibility_To_Environment_Merge" sourceRef="Task_AI_Feasibility" targetRef="Gateway_Development_Environment_Merge" />
+    <bpmn:sequenceFlow id="Flow_Environment_Merge_To_ASIS_DEV" sourceRef="Gateway_Development_Environment_Merge" targetRef="SubProcess_ASIS_DEV" />
+    <bpmn:sequenceFlow id="Flow_ASIS_DEV_To_Preprocess_Fork" sourceRef="SubProcess_ASIS_DEV" targetRef="Gateway_Preprocessing_Fork" />
+    <bpmn:sequenceFlow id="Flow_Preprocess_Fork_To_ASIS_OUT" sourceRef="Gateway_Preprocessing_Fork" targetRef="SubProcess_ASIS_OUT" />
+    <bpmn:sequenceFlow id="Flow_Preprocess_Fork_To_ASIS_LBL" sourceRef="Gateway_Preprocessing_Fork" targetRef="SubProcess_ASIS_LBL" />
+    <bpmn:sequenceFlow id="Flow_ASIS_OUT_To_Preprocess_Join" sourceRef="SubProcess_ASIS_OUT" targetRef="Gateway_Preprocessing_Join" />
+    <bpmn:sequenceFlow id="Flow_ASIS_LBL_To_Preprocess_Join" sourceRef="SubProcess_ASIS_LBL" targetRef="Gateway_Preprocessing_Join" />
+    <bpmn:sequenceFlow id="Flow_Preprocess_Join_To_ASIS_DQC" sourceRef="Gateway_Preprocessing_Join" targetRef="SubProcess_ASIS_DQC" />
+    <bpmn:sequenceFlow id="Flow_ASIS_DQC_To_Data_Quality" sourceRef="SubProcess_ASIS_DQC" targetRef="Gateway_Data_Quality" />
+    <bpmn:sequenceFlow id="Flow_Data_Quality_Rework" name="미달 / 재작업" sourceRef="Gateway_Data_Quality" targetRef="Gateway_Development_Environment_Merge" />
+    <bpmn:sequenceFlow id="Flow_Data_Quality_To_ASIS_TDS" name="적합" sourceRef="Gateway_Data_Quality" targetRef="SubProcess_ASIS_TDS" />
+    <bpmn:sequenceFlow id="Flow_ASIS_TDS_To_Model_Selection" sourceRef="SubProcess_ASIS_TDS" targetRef="Task_Model_Selection" />
+    <bpmn:sequenceFlow id="Flow_Model_Selection_To_ASIS_DLG" sourceRef="Task_Model_Selection" targetRef="SubProcess_ASIS_DLG" />
+    <bpmn:sequenceFlow id="Flow_ASIS_DLG_To_ASIS_MDA" sourceRef="SubProcess_ASIS_DLG" targetRef="SubProcess_ASIS_MDA" />
+    <bpmn:sequenceFlow id="Flow_ASIS_MDA_To_ASIS_MTR" sourceRef="SubProcess_ASIS_MDA" targetRef="SubProcess_ASIS_MTR" />
+    <bpmn:sequenceFlow id="Flow_ASIS_MTR_To_Test_Environment" sourceRef="SubProcess_ASIS_MTR" targetRef="Task_Test_Environment" />
+    <bpmn:sequenceFlow id="Flow_Test_Environment_To_Function_Merge" sourceRef="Task_Test_Environment" targetRef="Gateway_Function_Merge" />
+    <bpmn:sequenceFlow id="Flow_Function_Merge_To_Validation" sourceRef="Gateway_Function_Merge" targetRef="Gateway_Function_Validation" />
+    <bpmn:sequenceFlow id="Flow_Function_To_ASIS_CIM" name="개선 필요" sourceRef="Gateway_Function_Validation" targetRef="SubProcess_ASIS_CIM" />
+    <bpmn:sequenceFlow id="Flow_ASIS_CIM_To_Parameter" sourceRef="SubProcess_ASIS_CIM" targetRef="Task_Parameter_Optimization" />
+    <bpmn:sequenceFlow id="Flow_Parameter_To_Function_Merge" sourceRef="Task_Parameter_Optimization" targetRef="Gateway_Function_Merge" />
+    <bpmn:sequenceFlow id="Flow_Function_To_ASIS_MON" name="검증 완료" sourceRef="Gateway_Function_Validation" targetRef="SubProcess_ASIS_MON" />
+    <bpmn:sequenceFlow id="Flow_ASIS_MON_To_ASIS_ANO" sourceRef="SubProcess_ASIS_MON" targetRef="SubProcess_ASIS_ANO" />
+    <bpmn:sequenceFlow id="Flow_ASIS_ANO_To_Conformity" sourceRef="SubProcess_ASIS_ANO" targetRef="Task_Defect_Conformity" />
+    <bpmn:sequenceFlow id="Flow_Conformity_To_Closed_Loop" sourceRef="Task_Defect_Conformity" targetRef="Task_Closed_Loop" />
+    <bpmn:sequenceFlow id="Flow_Closed_Loop_To_End" sourceRef="Task_Closed_Loop" targetRef="EndEvent_Process" />
+    <bpmn:textAnnotation id="TextAnnotation_ASIS_Legend">
+      <bpmn:text>가정 기반 AS-IS
+[B] Bottleneck  [D] Delay  [W] Waste
+E 제거 · C 결합 · R 재배열 · S 단순화 · A 자동화
+LT = 작업 + 대기 Lead Time 가정치 · 1일=8h
+현장 인터뷰·시스템 로그·리드타임 측정으로 검증 필요</bpmn:text>
+    </bpmn:textAnnotation>
+  </bpmn:process>
+  <bpmn:collaboration id="Collaboration_ASIS_Defect_AI_ClosedLoop">
+    <bpmn:participant id="Participant_ASIS_Main" name="AS-IS 가설 프로세스" processRef="Process_ASIS_Defect_AI_ClosedLoop" />
+  </bpmn:collaboration>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ASIS_Defect_AI_ClosedLoop">
+    <bpmndi:BPMNPlane id="BPMNPlane_ASIS_Defect_AI_ClosedLoop" bpmnElement="Collaboration_ASIS_Defect_AI_ClosedLoop">
+      <bpmndi:BPMNShape id="Participant_ASIS_Main_di" bpmnElement="Participant_ASIS_Main" isHorizontal="true">
+        <dc:Bounds x="60" y="100" width="3900" height="1860" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Defect_Definition_di" bpmnElement="Lane_Defect_Definition" isHorizontal="true" bioc:fill="#FFFFFF" bioc:stroke="#94A3B8">
+        <dc:Bounds x="90" y="100" width="3870" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Defect_Factor_Analysis_di" bpmnElement="Lane_Defect_Factor_Analysis" isHorizontal="true" bioc:fill="#F8FAFC" bioc:stroke="#94A3B8">
+        <dc:Bounds x="90" y="360" width="3870" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Production_Data_di" bpmnElement="Lane_Production_Data" isHorizontal="true" bioc:fill="#FFFFFF" bioc:stroke="#94A3B8">
+        <dc:Bounds x="90" y="620" width="3870" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_AI_Environment_Preprocessing_di" bpmnElement="Lane_AI_Environment_Preprocessing" isHorizontal="true" bioc:fill="#F8FAFC" bioc:stroke="#94A3B8">
+        <dc:Bounds x="90" y="880" width="3870" height="480" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_AI_Model_Development_di" bpmnElement="Lane_AI_Model_Development" isHorizontal="true" bioc:fill="#FFFFFF" bioc:stroke="#94A3B8">
+        <dc:Bounds x="90" y="1360" width="3870" height="300" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Monitoring_Optimization_di" bpmnElement="Lane_Monitoring_Optimization" isHorizontal="true" bioc:fill="#F8FAFC" bioc:stroke="#94A3B8">
+        <dc:Bounds x="90" y="1660" width="3870" height="300" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Process_di" bpmnElement="StartEvent_Process">
+        <dc:Bounds x="290" y="212" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="286" y="252" width="44" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Defect_Receipt_di" bpmnElement="Task_Defect_Receipt">
+        <dc:Bounds x="350" y="190" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_PIC_di" bpmnElement="SubProcess_ASIS_PIC" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="580" y="145" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_PIC_di" bpmnElement="Start_ASIS_PIC">
+        <dc:Bounds x="598" y="237" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_PIC_01_di" bpmnElement="Task_ASIS_PIC_01" bioc:fill="#FEF3C7" bioc:stroke="#D97706">
+        <dc:Bounds x="642" y="205" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_PIC_02_di" bpmnElement="Task_ASIS_PIC_02" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="798" y="205" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_PIC_03_di" bpmnElement="Task_ASIS_PIC_03" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="954" y="205" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_PIC_di" bpmnElement="End_ASIS_PIC">
+        <dc:Bounds x="1114" y="237" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Product_Info_di" bpmnElement="Gateway_Product_Info" isMarkerVisible="false">
+        <dc:Bounds x="1230" y="200" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1190" y="266" width="140" height="24" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Physical_Analysis_di" bpmnElement="Task_Physical_Analysis">
+        <dc:Bounds x="300" y="450" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Process_Analysis_Merge_di" bpmnElement="Gateway_Process_Analysis_Merge" isMarkerVisible="false">
+        <dc:Bounds x="520" y="460" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="490" y="526" width="120" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_PRA_di" bpmnElement="SubProcess_ASIS_PRA" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="600" y="405" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_PRA_di" bpmnElement="Start_ASIS_PRA">
+        <dc:Bounds x="618" y="497" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_PRA_01_di" bpmnElement="Task_ASIS_PRA_01" bioc:fill="#FEF3C7" bioc:stroke="#D97706">
+        <dc:Bounds x="662" y="465" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_PRA_02_di" bpmnElement="Task_ASIS_PRA_02" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="818" y="465" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_PRA_03_di" bpmnElement="Task_ASIS_PRA_03" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="974" y="465" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_PRA_di" bpmnElement="End_ASIS_PRA">
+        <dc:Bounds x="1134" y="497" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Data_Acquisition_di" bpmnElement="Task_Data_Acquisition">
+        <dc:Bounds x="300" y="710" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_DPL_di" bpmnElement="SubProcess_ASIS_DPL" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="540" y="665" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_DPL_di" bpmnElement="Start_ASIS_DPL">
+        <dc:Bounds x="558" y="757" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DPL_01_di" bpmnElement="Task_ASIS_DPL_01" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="602" y="725" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DPL_02_di" bpmnElement="Task_ASIS_DPL_02" bioc:fill="#FEF3C7" bioc:stroke="#D97706">
+        <dc:Bounds x="758" y="725" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DPL_03_di" bpmnElement="Task_ASIS_DPL_03" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="914" y="725" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_DPL_di" bpmnElement="End_ASIS_DPL">
+        <dc:Bounds x="1074" y="757" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_DBD_di" bpmnElement="SubProcess_ASIS_DBD" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="1180" y="665" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_DBD_di" bpmnElement="Start_ASIS_DBD">
+        <dc:Bounds x="1198" y="757" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DBD_01_di" bpmnElement="Task_ASIS_DBD_01" bioc:fill="#EDE9FE" bioc:stroke="#7C3AED">
+        <dc:Bounds x="1242" y="725" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DBD_02_di" bpmnElement="Task_ASIS_DBD_02" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="1398" y="725" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DBD_03_di" bpmnElement="Task_ASIS_DBD_03" bioc:fill="#FEF3C7" bioc:stroke="#D97706">
+        <dc:Bounds x="1554" y="725" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_DBD_di" bpmnElement="End_ASIS_DBD">
+        <dc:Bounds x="1714" y="757" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AI_Feasibility_di" bpmnElement="Task_AI_Feasibility">
+        <dc:Bounds x="300" y="1080" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Development_Environment_Merge_di" bpmnElement="Gateway_Development_Environment_Merge" isMarkerVisible="false">
+        <dc:Bounds x="500" y="1090" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="445" y="1058" width="110" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_DEV_di" bpmnElement="SubProcess_ASIS_DEV" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="580" y="1035" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_DEV_di" bpmnElement="Start_ASIS_DEV">
+        <dc:Bounds x="598" y="1127" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DEV_01_di" bpmnElement="Task_ASIS_DEV_01" bioc:fill="#FEF3C7" bioc:stroke="#D97706">
+        <dc:Bounds x="642" y="1095" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DEV_02_di" bpmnElement="Task_ASIS_DEV_02" bioc:fill="#FEF3C7" bioc:stroke="#D97706">
+        <dc:Bounds x="798" y="1095" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DEV_03_di" bpmnElement="Task_ASIS_DEV_03" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="954" y="1095" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_DEV_di" bpmnElement="End_ASIS_DEV">
+        <dc:Bounds x="1114" y="1127" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Preprocessing_Fork_di" bpmnElement="Gateway_Preprocessing_Fork">
+        <dc:Bounds x="1170" y="1090" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1136" y="1154" width="128" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_OUT_di" bpmnElement="SubProcess_ASIS_OUT" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="1260" y="900" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_OUT_di" bpmnElement="Start_ASIS_OUT">
+        <dc:Bounds x="1278" y="992" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_OUT_01_di" bpmnElement="Task_ASIS_OUT_01" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="1322" y="960" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_OUT_02_di" bpmnElement="Task_ASIS_OUT_02" bioc:fill="#EDE9FE" bioc:stroke="#7C3AED">
+        <dc:Bounds x="1478" y="960" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_OUT_03_di" bpmnElement="Task_ASIS_OUT_03" bioc:fill="#FEF3C7" bioc:stroke="#D97706">
+        <dc:Bounds x="1634" y="960" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_OUT_di" bpmnElement="End_ASIS_OUT">
+        <dc:Bounds x="1794" y="992" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_LBL_di" bpmnElement="SubProcess_ASIS_LBL" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="1260" y="1170" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_LBL_di" bpmnElement="Start_ASIS_LBL">
+        <dc:Bounds x="1278" y="1262" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_LBL_01_di" bpmnElement="Task_ASIS_LBL_01" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="1322" y="1230" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_LBL_02_di" bpmnElement="Task_ASIS_LBL_02" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="1478" y="1230" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_LBL_03_di" bpmnElement="Task_ASIS_LBL_03" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="1634" y="1230" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_LBL_di" bpmnElement="End_ASIS_LBL">
+        <dc:Bounds x="1794" y="1262" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Preprocessing_Join_di" bpmnElement="Gateway_Preprocessing_Join">
+        <dc:Bounds x="1900" y="1090" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1866" y="1154" width="128" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_DQC_di" bpmnElement="SubProcess_ASIS_DQC" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="1990" y="1035" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_DQC_di" bpmnElement="Start_ASIS_DQC">
+        <dc:Bounds x="2008" y="1127" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DQC_01_di" bpmnElement="Task_ASIS_DQC_01" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="2052" y="1095" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DQC_02_di" bpmnElement="Task_ASIS_DQC_02" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="2208" y="1095" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DQC_03_di" bpmnElement="Task_ASIS_DQC_03" bioc:fill="#FEF3C7" bioc:stroke="#D97706">
+        <dc:Bounds x="2364" y="1095" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_DQC_di" bpmnElement="End_ASIS_DQC">
+        <dc:Bounds x="2524" y="1127" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Data_Quality_di" bpmnElement="Gateway_Data_Quality" isMarkerVisible="false">
+        <dc:Bounds x="2630" y="1090" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2600" y="1154" width="120" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_TDS_di" bpmnElement="SubProcess_ASIS_TDS" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="2740" y="1035" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_TDS_di" bpmnElement="Start_ASIS_TDS">
+        <dc:Bounds x="2758" y="1127" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_TDS_01_di" bpmnElement="Task_ASIS_TDS_01" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="2802" y="1095" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_TDS_02_di" bpmnElement="Task_ASIS_TDS_02" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="2958" y="1095" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_TDS_03_di" bpmnElement="Task_ASIS_TDS_03" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="3114" y="1095" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_TDS_di" bpmnElement="End_ASIS_TDS">
+        <dc:Bounds x="3274" y="1127" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Model_Selection_di" bpmnElement="Task_Model_Selection">
+        <dc:Bounds x="300" y="1470" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_DLG_di" bpmnElement="SubProcess_ASIS_DLG" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="540" y="1425" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_DLG_di" bpmnElement="Start_ASIS_DLG">
+        <dc:Bounds x="558" y="1517" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DLG_01_di" bpmnElement="Task_ASIS_DLG_01" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="602" y="1485" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DLG_02_di" bpmnElement="Task_ASIS_DLG_02" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="758" y="1485" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_DLG_03_di" bpmnElement="Task_ASIS_DLG_03" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="914" y="1485" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_DLG_di" bpmnElement="End_ASIS_DLG">
+        <dc:Bounds x="1074" y="1517" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_MDA_di" bpmnElement="SubProcess_ASIS_MDA" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="1180" y="1425" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_MDA_di" bpmnElement="Start_ASIS_MDA">
+        <dc:Bounds x="1198" y="1517" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_MDA_01_di" bpmnElement="Task_ASIS_MDA_01" bioc:fill="#EDE9FE" bioc:stroke="#7C3AED">
+        <dc:Bounds x="1242" y="1485" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_MDA_02_di" bpmnElement="Task_ASIS_MDA_02" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="1398" y="1485" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_MDA_03_di" bpmnElement="Task_ASIS_MDA_03" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="1554" y="1485" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_MDA_di" bpmnElement="End_ASIS_MDA">
+        <dc:Bounds x="1714" y="1517" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_MTR_di" bpmnElement="SubProcess_ASIS_MTR" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="1820" y="1425" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_MTR_di" bpmnElement="Start_ASIS_MTR">
+        <dc:Bounds x="1838" y="1517" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_MTR_01_di" bpmnElement="Task_ASIS_MTR_01" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="1882" y="1485" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_MTR_02_di" bpmnElement="Task_ASIS_MTR_02" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="2038" y="1485" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_MTR_03_di" bpmnElement="Task_ASIS_MTR_03" bioc:fill="#FEF3C7" bioc:stroke="#D97706">
+        <dc:Bounds x="2194" y="1485" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_MTR_di" bpmnElement="End_ASIS_MTR">
+        <dc:Bounds x="2354" y="1517" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Test_Environment_di" bpmnElement="Task_Test_Environment">
+        <dc:Bounds x="2460" y="1470" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Function_Merge_di" bpmnElement="Gateway_Function_Merge" isMarkerVisible="false">
+        <dc:Bounds x="2650" y="1485" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2615" y="1438" width="120" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Function_Validation_di" bpmnElement="Gateway_Function_Validation" isMarkerVisible="false">
+        <dc:Bounds x="2730" y="1480" width="60" height="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2720" y="1544" width="80" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_CIM_di" bpmnElement="SubProcess_ASIS_CIM" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="2840" y="1425" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_CIM_di" bpmnElement="Start_ASIS_CIM">
+        <dc:Bounds x="2858" y="1517" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_CIM_01_di" bpmnElement="Task_ASIS_CIM_01" bioc:fill="#FEF3C7" bioc:stroke="#D97706">
+        <dc:Bounds x="2902" y="1485" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_CIM_02_di" bpmnElement="Task_ASIS_CIM_02" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="3058" y="1485" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_CIM_03_di" bpmnElement="Task_ASIS_CIM_03" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="3214" y="1485" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_CIM_di" bpmnElement="End_ASIS_CIM">
+        <dc:Bounds x="3374" y="1517" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Parameter_Optimization_di" bpmnElement="Task_Parameter_Optimization">
+        <dc:Bounds x="3480" y="1470" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_MON_di" bpmnElement="SubProcess_ASIS_MON" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="300" y="1725" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_MON_di" bpmnElement="Start_ASIS_MON">
+        <dc:Bounds x="318" y="1817" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_MON_01_di" bpmnElement="Task_ASIS_MON_01" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="362" y="1785" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_MON_02_di" bpmnElement="Task_ASIS_MON_02" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="518" y="1785" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_MON_03_di" bpmnElement="Task_ASIS_MON_03" bioc:fill="#FEF3C7" bioc:stroke="#D97706">
+        <dc:Bounds x="674" y="1785" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_MON_di" bpmnElement="End_ASIS_MON">
+        <dc:Bounds x="834" y="1817" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_ASIS_ANO_di" bpmnElement="SubProcess_ASIS_ANO" isExpanded="true" bioc:fill="#EFF6FF" bioc:stroke="#2563EB">
+        <dc:Bounds x="940" y="1725" width="580" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ASIS_ANO_di" bpmnElement="Start_ASIS_ANO">
+        <dc:Bounds x="958" y="1817" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_ANO_01_di" bpmnElement="Task_ASIS_ANO_01" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="1002" y="1785" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_ANO_02_di" bpmnElement="Task_ASIS_ANO_02" bioc:fill="#FEE2E2" bioc:stroke="#DC2626">
+        <dc:Bounds x="1158" y="1785" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASIS_ANO_03_di" bpmnElement="Task_ASIS_ANO_03" bioc:fill="#FEF3C7" bioc:stroke="#D97706">
+        <dc:Bounds x="1314" y="1785" width="140" height="88" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ASIS_ANO_di" bpmnElement="End_ASIS_ANO">
+        <dc:Bounds x="1474" y="1817" width="24" height="24" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Defect_Conformity_di" bpmnElement="Task_Defect_Conformity">
+        <dc:Bounds x="1580" y="1770" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Closed_Loop_di" bpmnElement="Task_Closed_Loop">
+        <dc:Bounds x="1830" y="1770" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Process_di" bpmnElement="EndEvent_Process">
+        <dc:Bounds x="2080" y="1792" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2076" y="1832" width="44" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_ASIS_Legend_di" bpmnElement="TextAnnotation_ASIS_Legend">
+        <dc:Bounds x="2800" y="130" width="850" height="125" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Receipt_di" bpmnElement="Flow_Start_To_Receipt">
+        <di:waypoint x="326" y="230" />
+        <di:waypoint x="350" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Receipt_To_ASIS_PIC_di" bpmnElement="Flow_Receipt_To_ASIS_PIC">
+        <di:waypoint x="520" y="230" />
+        <di:waypoint x="580" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_PIC_To_Product_Info_di" bpmnElement="Flow_ASIS_PIC_To_Product_Info">
+        <di:waypoint x="1160" y="230" />
+        <di:waypoint x="1230" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Product_Info_To_Physical_di" bpmnElement="Flow_Product_Info_To_Physical">
+        <di:waypoint x="1260" y="260" />
+        <di:waypoint x="1260" y="340" />
+        <di:waypoint x="385" y="340" />
+        <di:waypoint x="385" y="450" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="430" y="318" width="112" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Product_Info_To_Process_Merge_di" bpmnElement="Flow_Product_Info_To_Process_Merge">
+        <di:waypoint x="1290" y="230" />
+        <di:waypoint x="1330" y="230" />
+        <di:waypoint x="1330" y="440" />
+        <di:waypoint x="550" y="440" />
+        <di:waypoint x="550" y="460" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1120" y="418" width="78" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Physical_To_Process_Merge_di" bpmnElement="Flow_Physical_To_Process_Merge">
+        <di:waypoint x="470" y="490" />
+        <di:waypoint x="520" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Process_Merge_To_ASIS_PRA_di" bpmnElement="Flow_Process_Merge_To_ASIS_PRA">
+        <di:waypoint x="580" y="490" />
+        <di:waypoint x="600" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_PRA_To_Data_di" bpmnElement="Flow_ASIS_PRA_To_Data">
+        <di:waypoint x="890" y="575" />
+        <di:waypoint x="890" y="600" />
+        <di:waypoint x="385" y="600" />
+        <di:waypoint x="385" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Data_To_ASIS_DPL_di" bpmnElement="Flow_Data_To_ASIS_DPL">
+        <di:waypoint x="470" y="750" />
+        <di:waypoint x="540" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DPL_To_ASIS_DBD_di" bpmnElement="Flow_ASIS_DPL_To_ASIS_DBD">
+        <di:waypoint x="1120" y="750" />
+        <di:waypoint x="1180" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DBD_To_Feasibility_di" bpmnElement="Flow_ASIS_DBD_To_Feasibility">
+        <di:waypoint x="1470" y="835" />
+        <di:waypoint x="1470" y="860" />
+        <di:waypoint x="385" y="860" />
+        <di:waypoint x="385" y="1080" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Feasibility_To_Environment_Merge_di" bpmnElement="Flow_Feasibility_To_Environment_Merge">
+        <di:waypoint x="470" y="1120" />
+        <di:waypoint x="500" y="1120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Environment_Merge_To_ASIS_DEV_di" bpmnElement="Flow_Environment_Merge_To_ASIS_DEV">
+        <di:waypoint x="560" y="1120" />
+        <di:waypoint x="580" y="1120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DEV_To_Preprocess_Fork_di" bpmnElement="Flow_ASIS_DEV_To_Preprocess_Fork">
+        <di:waypoint x="1160" y="1120" />
+        <di:waypoint x="1170" y="1120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Preprocess_Fork_To_ASIS_OUT_di" bpmnElement="Flow_Preprocess_Fork_To_ASIS_OUT">
+        <di:waypoint x="1200" y="1090" />
+        <di:waypoint x="1200" y="985" />
+        <di:waypoint x="1260" y="985" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Preprocess_Fork_To_ASIS_LBL_di" bpmnElement="Flow_Preprocess_Fork_To_ASIS_LBL">
+        <di:waypoint x="1200" y="1150" />
+        <di:waypoint x="1200" y="1255" />
+        <di:waypoint x="1260" y="1255" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_OUT_To_Preprocess_Join_di" bpmnElement="Flow_ASIS_OUT_To_Preprocess_Join">
+        <di:waypoint x="1840" y="985" />
+        <di:waypoint x="1915" y="1105" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_LBL_To_Preprocess_Join_di" bpmnElement="Flow_ASIS_LBL_To_Preprocess_Join">
+        <di:waypoint x="1840" y="1255" />
+        <di:waypoint x="1915" y="1135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Preprocess_Join_To_ASIS_DQC_di" bpmnElement="Flow_Preprocess_Join_To_ASIS_DQC">
+        <di:waypoint x="1960" y="1120" />
+        <di:waypoint x="1990" y="1120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DQC_To_Data_Quality_di" bpmnElement="Flow_ASIS_DQC_To_Data_Quality">
+        <di:waypoint x="2570" y="1120" />
+        <di:waypoint x="2630" y="1120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Data_Quality_Rework_di" bpmnElement="Flow_Data_Quality_Rework">
+        <di:waypoint x="2660" y="1090" />
+        <di:waypoint x="2660" y="890" />
+        <di:waypoint x="530" y="890" />
+        <di:waypoint x="530" y="1090" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2140" y="868" width="112" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Data_Quality_To_ASIS_TDS_di" bpmnElement="Flow_Data_Quality_To_ASIS_TDS">
+        <di:waypoint x="2690" y="1120" />
+        <di:waypoint x="2740" y="1120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2698" y="1095" width="38" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_TDS_To_Model_Selection_di" bpmnElement="Flow_ASIS_TDS_To_Model_Selection">
+        <di:waypoint x="3030" y="1205" />
+        <di:waypoint x="3030" y="1340" />
+        <di:waypoint x="385" y="1340" />
+        <di:waypoint x="385" y="1470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Model_Selection_To_ASIS_DLG_di" bpmnElement="Flow_Model_Selection_To_ASIS_DLG">
+        <di:waypoint x="470" y="1510" />
+        <di:waypoint x="540" y="1510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DLG_To_ASIS_MDA_di" bpmnElement="Flow_ASIS_DLG_To_ASIS_MDA">
+        <di:waypoint x="1120" y="1510" />
+        <di:waypoint x="1180" y="1510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MDA_To_ASIS_MTR_di" bpmnElement="Flow_ASIS_MDA_To_ASIS_MTR">
+        <di:waypoint x="1760" y="1510" />
+        <di:waypoint x="1820" y="1510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MTR_To_Test_Environment_di" bpmnElement="Flow_ASIS_MTR_To_Test_Environment">
+        <di:waypoint x="2400" y="1510" />
+        <di:waypoint x="2460" y="1510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Test_Environment_To_Function_Merge_di" bpmnElement="Flow_Test_Environment_To_Function_Merge">
+        <di:waypoint x="2630" y="1510" />
+        <di:waypoint x="2650" y="1510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Function_Merge_To_Validation_di" bpmnElement="Flow_Function_Merge_To_Validation">
+        <di:waypoint x="2700" y="1510" />
+        <di:waypoint x="2730" y="1510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Function_To_ASIS_CIM_di" bpmnElement="Flow_Function_To_ASIS_CIM">
+        <di:waypoint x="2790" y="1510" />
+        <di:waypoint x="2840" y="1510" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2790" y="1485" width="72" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_CIM_To_Parameter_di" bpmnElement="Flow_ASIS_CIM_To_Parameter">
+        <di:waypoint x="3420" y="1510" />
+        <di:waypoint x="3480" y="1510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Parameter_To_Function_Merge_di" bpmnElement="Flow_Parameter_To_Function_Merge">
+        <di:waypoint x="3650" y="1510" />
+        <di:waypoint x="3740" y="1510" />
+        <di:waypoint x="3740" y="1380" />
+        <di:waypoint x="2675" y="1380" />
+        <di:waypoint x="2675" y="1485" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Function_To_ASIS_MON_di" bpmnElement="Flow_Function_To_ASIS_MON">
+        <di:waypoint x="2760" y="1540" />
+        <di:waypoint x="2760" y="1640" />
+        <di:waypoint x="590" y="1640" />
+        <di:waypoint x="590" y="1725" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2200" y="1618" width="72" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MON_To_ASIS_ANO_di" bpmnElement="Flow_ASIS_MON_To_ASIS_ANO">
+        <di:waypoint x="880" y="1810" />
+        <di:waypoint x="940" y="1810" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_ANO_To_Conformity_di" bpmnElement="Flow_ASIS_ANO_To_Conformity">
+        <di:waypoint x="1520" y="1810" />
+        <di:waypoint x="1580" y="1810" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Conformity_To_Closed_Loop_di" bpmnElement="Flow_Conformity_To_Closed_Loop">
+        <di:waypoint x="1760" y="1810" />
+        <di:waypoint x="1830" y="1810" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Closed_Loop_To_End_di" bpmnElement="Flow_Closed_Loop_To_End">
+        <di:waypoint x="2010" y="1810" />
+        <di:waypoint x="2080" y="1810" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_PIC_01_di" bpmnElement="Flow_ASIS_PIC_01">
+        <di:waypoint x="622" y="249" />
+        <di:waypoint x="642" y="249" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_PIC_02_di" bpmnElement="Flow_ASIS_PIC_02">
+        <di:waypoint x="782" y="249" />
+        <di:waypoint x="798" y="249" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_PIC_03_di" bpmnElement="Flow_ASIS_PIC_03">
+        <di:waypoint x="938" y="249" />
+        <di:waypoint x="954" y="249" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_PIC_04_di" bpmnElement="Flow_ASIS_PIC_04">
+        <di:waypoint x="1094" y="249" />
+        <di:waypoint x="1114" y="249" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_PRA_01_di" bpmnElement="Flow_ASIS_PRA_01">
+        <di:waypoint x="642" y="509" />
+        <di:waypoint x="662" y="509" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_PRA_02_di" bpmnElement="Flow_ASIS_PRA_02">
+        <di:waypoint x="802" y="509" />
+        <di:waypoint x="818" y="509" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_PRA_03_di" bpmnElement="Flow_ASIS_PRA_03">
+        <di:waypoint x="958" y="509" />
+        <di:waypoint x="974" y="509" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_PRA_04_di" bpmnElement="Flow_ASIS_PRA_04">
+        <di:waypoint x="1114" y="509" />
+        <di:waypoint x="1134" y="509" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DPL_01_di" bpmnElement="Flow_ASIS_DPL_01">
+        <di:waypoint x="582" y="769" />
+        <di:waypoint x="602" y="769" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DPL_02_di" bpmnElement="Flow_ASIS_DPL_02">
+        <di:waypoint x="742" y="769" />
+        <di:waypoint x="758" y="769" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DPL_03_di" bpmnElement="Flow_ASIS_DPL_03">
+        <di:waypoint x="898" y="769" />
+        <di:waypoint x="914" y="769" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DPL_04_di" bpmnElement="Flow_ASIS_DPL_04">
+        <di:waypoint x="1054" y="769" />
+        <di:waypoint x="1074" y="769" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DBD_01_di" bpmnElement="Flow_ASIS_DBD_01">
+        <di:waypoint x="1222" y="769" />
+        <di:waypoint x="1242" y="769" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DBD_02_di" bpmnElement="Flow_ASIS_DBD_02">
+        <di:waypoint x="1382" y="769" />
+        <di:waypoint x="1398" y="769" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DBD_03_di" bpmnElement="Flow_ASIS_DBD_03">
+        <di:waypoint x="1538" y="769" />
+        <di:waypoint x="1554" y="769" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DBD_04_di" bpmnElement="Flow_ASIS_DBD_04">
+        <di:waypoint x="1694" y="769" />
+        <di:waypoint x="1714" y="769" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DEV_01_di" bpmnElement="Flow_ASIS_DEV_01">
+        <di:waypoint x="622" y="1139" />
+        <di:waypoint x="642" y="1139" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DEV_02_di" bpmnElement="Flow_ASIS_DEV_02">
+        <di:waypoint x="782" y="1139" />
+        <di:waypoint x="798" y="1139" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DEV_03_di" bpmnElement="Flow_ASIS_DEV_03">
+        <di:waypoint x="938" y="1139" />
+        <di:waypoint x="954" y="1139" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DEV_04_di" bpmnElement="Flow_ASIS_DEV_04">
+        <di:waypoint x="1094" y="1139" />
+        <di:waypoint x="1114" y="1139" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_OUT_01_di" bpmnElement="Flow_ASIS_OUT_01">
+        <di:waypoint x="1302" y="1004" />
+        <di:waypoint x="1322" y="1004" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_OUT_02_di" bpmnElement="Flow_ASIS_OUT_02">
+        <di:waypoint x="1462" y="1004" />
+        <di:waypoint x="1478" y="1004" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_OUT_03_di" bpmnElement="Flow_ASIS_OUT_03">
+        <di:waypoint x="1618" y="1004" />
+        <di:waypoint x="1634" y="1004" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_OUT_04_di" bpmnElement="Flow_ASIS_OUT_04">
+        <di:waypoint x="1774" y="1004" />
+        <di:waypoint x="1794" y="1004" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_LBL_01_di" bpmnElement="Flow_ASIS_LBL_01">
+        <di:waypoint x="1302" y="1274" />
+        <di:waypoint x="1322" y="1274" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_LBL_02_di" bpmnElement="Flow_ASIS_LBL_02">
+        <di:waypoint x="1462" y="1274" />
+        <di:waypoint x="1478" y="1274" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_LBL_03_di" bpmnElement="Flow_ASIS_LBL_03">
+        <di:waypoint x="1618" y="1274" />
+        <di:waypoint x="1634" y="1274" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_LBL_04_di" bpmnElement="Flow_ASIS_LBL_04">
+        <di:waypoint x="1774" y="1274" />
+        <di:waypoint x="1794" y="1274" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DQC_01_di" bpmnElement="Flow_ASIS_DQC_01">
+        <di:waypoint x="2032" y="1139" />
+        <di:waypoint x="2052" y="1139" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DQC_02_di" bpmnElement="Flow_ASIS_DQC_02">
+        <di:waypoint x="2192" y="1139" />
+        <di:waypoint x="2208" y="1139" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DQC_03_di" bpmnElement="Flow_ASIS_DQC_03">
+        <di:waypoint x="2348" y="1139" />
+        <di:waypoint x="2364" y="1139" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DQC_04_di" bpmnElement="Flow_ASIS_DQC_04">
+        <di:waypoint x="2504" y="1139" />
+        <di:waypoint x="2524" y="1139" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_TDS_01_di" bpmnElement="Flow_ASIS_TDS_01">
+        <di:waypoint x="2782" y="1139" />
+        <di:waypoint x="2802" y="1139" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_TDS_02_di" bpmnElement="Flow_ASIS_TDS_02">
+        <di:waypoint x="2942" y="1139" />
+        <di:waypoint x="2958" y="1139" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_TDS_03_di" bpmnElement="Flow_ASIS_TDS_03">
+        <di:waypoint x="3098" y="1139" />
+        <di:waypoint x="3114" y="1139" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_TDS_04_di" bpmnElement="Flow_ASIS_TDS_04">
+        <di:waypoint x="3254" y="1139" />
+        <di:waypoint x="3274" y="1139" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DLG_01_di" bpmnElement="Flow_ASIS_DLG_01">
+        <di:waypoint x="582" y="1529" />
+        <di:waypoint x="602" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DLG_02_di" bpmnElement="Flow_ASIS_DLG_02">
+        <di:waypoint x="742" y="1529" />
+        <di:waypoint x="758" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DLG_03_di" bpmnElement="Flow_ASIS_DLG_03">
+        <di:waypoint x="898" y="1529" />
+        <di:waypoint x="914" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_DLG_04_di" bpmnElement="Flow_ASIS_DLG_04">
+        <di:waypoint x="1054" y="1529" />
+        <di:waypoint x="1074" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MDA_01_di" bpmnElement="Flow_ASIS_MDA_01">
+        <di:waypoint x="1222" y="1529" />
+        <di:waypoint x="1242" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MDA_02_di" bpmnElement="Flow_ASIS_MDA_02">
+        <di:waypoint x="1382" y="1529" />
+        <di:waypoint x="1398" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MDA_03_di" bpmnElement="Flow_ASIS_MDA_03">
+        <di:waypoint x="1538" y="1529" />
+        <di:waypoint x="1554" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MDA_04_di" bpmnElement="Flow_ASIS_MDA_04">
+        <di:waypoint x="1694" y="1529" />
+        <di:waypoint x="1714" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MTR_01_di" bpmnElement="Flow_ASIS_MTR_01">
+        <di:waypoint x="1862" y="1529" />
+        <di:waypoint x="1882" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MTR_02_di" bpmnElement="Flow_ASIS_MTR_02">
+        <di:waypoint x="2022" y="1529" />
+        <di:waypoint x="2038" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MTR_03_di" bpmnElement="Flow_ASIS_MTR_03">
+        <di:waypoint x="2178" y="1529" />
+        <di:waypoint x="2194" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MTR_04_di" bpmnElement="Flow_ASIS_MTR_04">
+        <di:waypoint x="2334" y="1529" />
+        <di:waypoint x="2354" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_CIM_01_di" bpmnElement="Flow_ASIS_CIM_01">
+        <di:waypoint x="2882" y="1529" />
+        <di:waypoint x="2902" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_CIM_02_di" bpmnElement="Flow_ASIS_CIM_02">
+        <di:waypoint x="3042" y="1529" />
+        <di:waypoint x="3058" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_CIM_03_di" bpmnElement="Flow_ASIS_CIM_03">
+        <di:waypoint x="3198" y="1529" />
+        <di:waypoint x="3214" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_CIM_04_di" bpmnElement="Flow_ASIS_CIM_04">
+        <di:waypoint x="3354" y="1529" />
+        <di:waypoint x="3374" y="1529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MON_01_di" bpmnElement="Flow_ASIS_MON_01">
+        <di:waypoint x="342" y="1829" />
+        <di:waypoint x="362" y="1829" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MON_02_di" bpmnElement="Flow_ASIS_MON_02">
+        <di:waypoint x="502" y="1829" />
+        <di:waypoint x="518" y="1829" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MON_03_di" bpmnElement="Flow_ASIS_MON_03">
+        <di:waypoint x="658" y="1829" />
+        <di:waypoint x="674" y="1829" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_MON_04_di" bpmnElement="Flow_ASIS_MON_04">
+        <di:waypoint x="814" y="1829" />
+        <di:waypoint x="834" y="1829" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_ANO_01_di" bpmnElement="Flow_ASIS_ANO_01">
+        <di:waypoint x="982" y="1829" />
+        <di:waypoint x="1002" y="1829" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_ANO_02_di" bpmnElement="Flow_ASIS_ANO_02">
+        <di:waypoint x="1142" y="1829" />
+        <di:waypoint x="1158" y="1829" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_ANO_03_di" bpmnElement="Flow_ASIS_ANO_03">
+        <di:waypoint x="1298" y="1829" />
+        <di:waypoint x="1314" y="1829" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ASIS_ANO_04_di" bpmnElement="Flow_ASIS_ANO_04">
+        <di:waypoint x="1454" y="1829" />
+        <di:waypoint x="1474" y="1829" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
